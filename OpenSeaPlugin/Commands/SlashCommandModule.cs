@@ -9,7 +9,7 @@ namespace OpenSeaPlugin.Commands
     public class SlashCommandModule : DiscordBotInteractionModule
     {
         [SlashCommand("stats", "Displays a collection's statistics.")]
-        public async Task Stats([Summary("The slug identifier used by OpenSea.")] string slug = null) {
+        public async Task Stats([Summary(description: "The slug identifier used by OpenSea.")] string slug = null) {
             try {
                 slug = OpenSeaCommands.ValidateCollection(Context.Guild.Id, slug);
 

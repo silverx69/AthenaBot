@@ -1,19 +1,18 @@
 ﻿using AthenaBot;
 using AthenaBot.Plugins;
 using BscScan.NetCore.Configuration;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using TokenInfoPlugin.Configuration;
 using BscScan.NetCore.Services;
 using CoinGecko.Clients;
 using CoinGecko.Entities.Response.Coins;
+using Newtonsoft.Json;
+using TokenInfoPlugin.Configuration;
 
 namespace TokenInfoPlugin
 {
     public class TokenInfoPlugin : DiscordBotPlugin
     {
-        JsonSerializerOptions jsonOptions;
         Dictionary<string, TokenInfo> recentInfos;
+        static readonly JsonSerializerSettings jsonSettings = new();
 
         const string BscScanApi = "https://api.bscscan.com/api";
 
@@ -35,17 +34,11 @@ namespace TokenInfoPlugin
             Config = Persistence.LoadModel<PluginConfig>(file);
             if (!File.Exists(file)) Persistence.SaveModel(Config, file);
 
-            jsonOptions = new JsonSerializerOptions(Json.Options) {
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString
-            };
-
             recentInfos = new Dictionary<string, TokenInfo>();
         }
 
         public override void OnPluginKilled() {
             Persistence.SaveModel(Config, Path.Combine(Directory, "config.json"));
-            jsonOptions = null;
             recentInfos.Clear();
             recentInfos = null;
         }
@@ -74,13 +67,13 @@ namespace TokenInfoPlugin
 
             if (now.Subtract(recent.LastUpdate).TotalMinutes >= 5) {
                 using var client = new HttpClient();
-                var ping = new PingClient(client, jsonOptions);
+                var ping = new PingClient(client, jsonSettings);
 
                 if (string.IsNullOrEmpty((await ping.GetPingAsync()).GeckoSays))
                     throw new TokenInfoException("Unable to contact CoinGecko");
 
                 CoinFullDataById coin = null;
-                var coins = new CoinsClient(client, jsonOptions);
+                var coins = new CoinsClient(client, jsonSettings);
 
                 try {
                     coin = await coins.GetAllCoinDataWithId(config.CoinGeckoId);
@@ -96,7 +89,8 @@ namespace TokenInfoPlugin
                 recent.Name = coin.Name;
                 recent.MarketCap = coin.MarketData?.MarketCap["usd"] ?? 0M;
                 recent.TotalSupply = coin.MarketData?.TotalSupply ?? 0M;
-                recent.CirculatingSupply = coin.MarketData?.CirculatingSupply ?? 0M;
+                if (decimal.TryParse(coin.MarketData?.CirculatingSupply ?? "0", out decimal supply))
+                    recent.CirculatingSupply = supply;
                 recent.Price = coin.MarketData?.CurrentPrice["usd"] ?? 0M;
                 recent.Contracts = coin.Platforms;
                 recent.Homepage = coin.Links?.Homepage.FirstOrDefault() ?? string.Empty;
