@@ -47,9 +47,9 @@ namespace TokenInfoPlugin
         }
     }
 
-    public sealed class TokenInfoException : Exception 
+    public sealed class TokenInfoException : Exception
     {
-        public TokenInfoException(string message) 
+        public TokenInfoException(string message)
             : base(message) { }
     }
 }

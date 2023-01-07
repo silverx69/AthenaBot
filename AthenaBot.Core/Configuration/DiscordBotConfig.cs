@@ -7,8 +7,8 @@ namespace AthenaBot.Configuration
         [JsonPropertyName("apiKey")]
         public string DiscordApiKey { get; set; }
 
-        [JsonPropertyName("status")]
-        public string BotStatus { get; set; }
+        [JsonPropertyName("activity")]
+        public ActivityConfig Activity { get; set; }
 
         [JsonPropertyName("plugins")]
         public ModelList<string> Plugins { get; set; }
@@ -20,7 +20,6 @@ namespace AthenaBot.Configuration
         public Dictionary<string, object> Extended { get; set; }
 
         public DiscordBotConfig() {
-            BotStatus = "War Games";
             Plugins = new ModelList<string>();
             Servers = new ModelList<ServerConfig>();
             Extended = new Dictionary<string, object>();

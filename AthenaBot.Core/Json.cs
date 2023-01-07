@@ -1,5 +1,6 @@
 ﻿using AthenaBot.Converters;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace AthenaBot
 {
@@ -13,9 +14,12 @@ namespace AthenaBot
         static Json() {
             Options = new JsonSerializerOptions(JsonSerializerDefaults.Web) {
                 WriteIndented = true,
-                AllowTrailingCommas = true
+                AllowTrailingCommas = true,
+                Converters = {
+                    new JsonStringEnumConverter(),
+                    new JsonByteArrayConverter()
+                }
             };
-            Options.Converters.Add(new JsonByteArrayConverter());
         }
 
         public static string Serialize(object obj) {

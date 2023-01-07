@@ -1,9 +1,6 @@
-﻿using System.Collections.Specialized;
-using System.ComponentModel;
-
-namespace AthenaBot.Plugins
+﻿namespace AthenaBot.Plugins
 {
-    public interface IPluginHost<TPlugin> : IReadOnlyObservableCollection<PluginContext<TPlugin>> 
+    public interface IPluginHost<TPlugin> : IReadOnlyObservableCollection<PluginContext<TPlugin>>, IDisposable
         where TPlugin : IPlugin
     {
         bool LoadPlugin(string name);

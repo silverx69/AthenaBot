@@ -31,6 +31,11 @@ namespace AthenaBot
 
         public ModelReadOnlyList(ModelList<T> innerList) {
             InnerList = innerList ?? throw new ArgumentNullException(nameof(innerList));
+            InnerList.PropertyChanged += InnerList_PropertyChanged;
+        }
+
+        private void InnerList_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            OnPropertyChanging(e.PropertyName);
         }
 
         public void CopyTo(Array array, int index) {
@@ -47,11 +52,6 @@ namespace AthenaBot
 
         IEnumerator IEnumerable.GetEnumerator() {
             return InnerList.GetEnumerator();
-        }
-
-        public override event PropertyChangedEventHandler PropertyChanged {
-            add { InnerList.PropertyChanged += value; }
-            remove { InnerList.PropertyChanged -= value; }
         }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged {

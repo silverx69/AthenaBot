@@ -1,5 +1,4 @@
 ﻿using Discord;
-using System.Reflection.Emit;
 using System.Text;
 
 namespace AthenaBot

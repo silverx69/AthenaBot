@@ -1,12 +1,12 @@
-﻿using System.Runtime.Loader;
-
-namespace AthenaBot.Plugins
+﻿namespace AthenaBot.Plugins
 {
     public abstract class PluginHost<TPlugin> :
         ModelReadOnlyList<PluginContext<TPlugin>>,
         IPluginHost<TPlugin>
         where TPlugin : IPlugin
     {
+        volatile bool unloading = false;
+
         public string BaseDirectory {
             get;
             private set;
@@ -14,6 +14,11 @@ namespace AthenaBot.Plugins
 
         public PluginHost(string baseDirectory) {
             BaseDirectory = baseDirectory;
+        }
+
+        public virtual void Dispose() {
+            KillAllPlugins();
+            GC.SuppressFinalize(this);
         }
 
         public bool LoadPlugin(string name) {
@@ -64,33 +69,35 @@ namespace AthenaBot.Plugins
         }
 
         public void KillPlugin(string name) {
-            PluginContext<TPlugin> context;
-
             lock (SyncRoot) {
                 string lowname = name.ToLower();
 
                 int index = this.FindIndex(s => s.Name.ToLower() == lowname);
                 if (index == -1) return;
 
-                context = this[index];
-                InnerList.RemoveAt(index);
+                KillPlugin(this[index]);
             }
+        }
 
-            context.Unloading += OnPluginUnloading;
-            context.Unload();
-
+        protected void KillPlugin(PluginContext<TPlugin> context) {
+            InnerList.Remove(context);
             OnPluginKilled(context);
+            context.Unload();
+        }
+
+        protected void KillAllPlugins() {
+            unloading = true;
+            foreach (var context in this) {
+                OnPluginKilled(context);
+                context.Unload();
+            }
+            InnerList.Clear();
+            unloading = false;
         }
 
         protected abstract void OnPluginLoaded(PluginContext<TPlugin> context);
 
         protected abstract void OnPluginKilled(PluginContext<TPlugin> context);
-
-        //Occurs when the plugin assembly is actually unloaded by the runtime
-        protected virtual async void OnPluginUnloading(AssemblyLoadContext ctx) {
-            ctx.Unloading -= OnPluginUnloading;
-            await Logging.InfoAsync("PluginHost", "The plugin \"{0}\" has been unloaded.", ctx.Name);
-        }
 
 
         protected virtual void OnError(PluginContext<TPlugin> context, string method, Exception ex) {
@@ -116,7 +123,7 @@ namespace AthenaBot.Plugins
         }
 
         protected void RaisePluginKilled(PluginContext<TPlugin> context) {
-            Killed?.Invoke(this, context);
+            if (!unloading) Killed?.Invoke(this, context);
         }
 
         protected virtual PluginContext<T> GetPluginContext<T>(string dllname) where T : IPlugin {

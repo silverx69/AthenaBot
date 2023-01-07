@@ -1,7 +1,6 @@
 ﻿using AthenaBot;
 using AthenaBot.Commands;
 using Discord.Commands;
-using Discord.WebSocket;
 using System.Net;
 
 namespace OpenSeaPlugin.Commands

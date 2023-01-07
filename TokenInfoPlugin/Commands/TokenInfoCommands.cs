@@ -1,18 +1,13 @@
-﻿using AthenaBot.Plugins;
-using Discord;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Discord;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace TokenInfoPlugin.Commands
 {
     static class TokenInfoCommands
     {
-        public static async Task<Embed> GetPriceAsync(string id) {
+        public static async Task<Embed> GetPriceAsync(ulong guildId, string id) {
 
-            var recent = await TokenInfoPlugin.Self.GetTokenInfo(id);
+            var recent = await TokenInfoPlugin.Self.GetTokenInfo(guildId, id);
 
             var eb = new EmbedBuilder() {
                 Title = recent.Name,
@@ -28,9 +23,9 @@ namespace TokenInfoPlugin.Commands
             return eb.Build();
         }
 
-        public static async Task<Embed> GetInfoAsync(string id) {
+        public static async Task<Embed> GetInfoAsync(ulong guildId, string id) {
 
-            var recent = await TokenInfoPlugin.Self.GetTokenInfo(id);
+            var recent = await TokenInfoPlugin.Self.GetTokenInfo(guildId, id);
 
             var eb = new EmbedBuilder() {
                 Title = recent.Name,
@@ -40,26 +35,26 @@ namespace TokenInfoPlugin.Commands
 
             var sb = new StringBuilder();
             //build Market field
-            sb.AppendFormat("Price: ${0}", recent.Price);
+            sb.AppendFormat("**Price:** ${0}", recent.Price);
             sb.AppendLine();
             sb.AppendLine();
-            sb.AppendFormat("Market Cap: {0}", recent.MarketCap.ToString("C"));
+            sb.AppendFormat("**Market Cap:** {0}", recent.MarketCap.ToString("C"));
             sb.AppendLine();
             //add Market field
-            eb.AddField("Market", sb.ToString());
+            eb.AddField("__Market__", sb.ToString());
             sb.Clear();
             //build Supply field
-            sb.AppendFormat("Circulating: {0}", recent.CirculatingSupply.ToString("N"));
+            sb.AppendFormat("**Circulating:** {0}", recent.CirculatingSupply.ToString("N"));
             sb.AppendLine();
             sb.AppendLine();
             if (recent.Burned > 0M) {
-                sb.AppendFormat("Burned: {0}", recent.Burned.ToString("N"));
+                sb.AppendFormat("**Burned:** {0}", recent.Burned.ToString("N"));
                 sb.AppendLine();
                 sb.AppendLine();
             }
-            sb.AppendFormat("Total: {0}", recent.TotalSupply.ToString("N"));
+            sb.AppendFormat("**Total:** {0}", recent.TotalSupply.ToString("N"));
             //add supply field
-            eb.AddField("Supply", sb.ToString());
+            eb.AddField("__Supply__", sb.ToString());
 
             //use desc instead of fields?
             //eb.WithDescription(sb.ToString());

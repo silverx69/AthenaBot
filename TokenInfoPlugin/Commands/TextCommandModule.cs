@@ -1,25 +1,17 @@
 ﻿using AthenaBot;
 using AthenaBot.Commands;
-using Discord;
 using Discord.Commands;
-using System.Text;
 
 namespace TokenInfoPlugin.Commands
 {
-    [Group("token")]
-    [Summary("TokenInfo Plugin Command Group")]
     public class TextCommandModule : DiscordBotCommandModule
     {
-        static TokenInfoPlugin Plugin {
-            get { return TokenInfoPlugin.Self; }
-        }
-
         [Command("price")]
         [Summary("Displays a currency's current price.")]
         public async Task Price([Summary("The ID of the token to display.")] string id = null) {
             using var typing = Context.Channel.EnterTypingState();
             try {
-                await ReplyAsync(embed: await TokenInfoCommands.GetPriceAsync(id));
+                await ReplyAsync(embed: await TokenInfoCommands.GetPriceAsync(Context.Guild.Id, id));
             }
             catch (TokenInfoException tex) {
                 await ReplyAsync(tex.Message);
@@ -30,12 +22,12 @@ namespace TokenInfoPlugin.Commands
             }
         }
 
-        [Command("info")]
+        [Command("token")]
         [Summary("Shows detailed information about a currency.")]
-        public async Task Info([Summary("The ID of the token to display.")] string id = null) {
+        public async Task Token([Summary("The ID of the token to display.")] string id = null) {
             using var typing = Context.Channel.EnterTypingState();
             try {
-                await ReplyAsync(embed: await TokenInfoCommands.GetInfoAsync(id));
+                await ReplyAsync(embed: await TokenInfoCommands.GetInfoAsync(Context.Guild.Id, id));
             }
             catch (TokenInfoException tex) {
                 await ReplyAsync(tex.Message);

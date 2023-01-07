@@ -107,6 +107,6 @@ namespace AthenaBot
         }
 
         //INotifyPropertyChanged
-        public virtual event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

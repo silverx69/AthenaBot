@@ -1,6 +1,4 @@
-﻿using AthenaBot.Plugins;
-using Discord;
-using Discord.WebSocket;
+﻿using Discord;
 using OpenSeaClient;
 
 namespace OpenSeaPlugin.Commands
@@ -37,31 +35,6 @@ namespace OpenSeaPlugin.Commands
             eb.AddField("Owners", stats.Owners, true);
             eb.AddField("Volume (30d)", string.Format("{0} {1}", (long)stats.ThirtyDayVolume, symbol), true);
             eb.AddField("Floor", string.Format("{0} {1}", stats.FloorPrice, symbol), true);
-            eb.WithCurrentTimestamp();
-
-            return eb.Build();
-        }
-
-        public static async Task<Embed> GetRecentAsync(string collection, string type = "sale", int limit = 10) {
-
-            var client = new OpenSeaHttpClient(apiKey: OpenSeaPlugin.Config.OpenSeaApiKey);
-            var oscol = await client.GetCollectionAsync(collection);
-
-            var qParams = new GetEventsQueryParams() {
-                CollectionSlug = collection,
-                Limit = limit,
-                EventType = "successful"
-            };
-
-            //var events = await client.GetEventsAsync(qParams);
-
-            var eb = new EmbedBuilder {
-                Title = oscol.Name,
-                ThumbnailUrl = oscol.ImageUrl,
-                Url = string.Format(OpenSeaUri, collection)
-            };
-
-            eb.WithDescription("Command Succeeded.");
             eb.WithCurrentTimestamp();
 
             return eb.Build();

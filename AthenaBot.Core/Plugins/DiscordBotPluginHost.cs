@@ -5,6 +5,7 @@
         IDiscordBotPluginHost
     {
         IDiscordBot bot = null;
+        volatile bool unloading = false;
 
         public IDiscordBot Bot {
             get { return bot; }
@@ -30,7 +31,6 @@
             catch (Exception ex) {
                 OnError(plugin, nameof(OnPluginLoaded), ex);
             }
-
             try {
                 RaisePluginLoaded(plugin);
             }
@@ -46,7 +46,7 @@
             catch (Exception ex) {
                 OnError(plugin, nameof(OnPluginKilled), ex);
             }
-
+            if (unloading) return;
             try {
                 RaisePluginKilled(plugin);
             }

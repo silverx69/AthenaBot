@@ -239,6 +239,6 @@ namespace AthenaBot
             RaisePropertyChanged(nameof(Count));
         }
 
-        public virtual event NotifyCollectionChangedEventHandler CollectionChanged;
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
     }
 }

@@ -3,7 +3,7 @@ using System.Runtime.Loader;
 
 namespace AthenaBot.Plugins
 {
-    public class PluginContext<TPlugin> : 
+    public class PluginContext<TPlugin> :
         AssemblyLoadContext,
         IPluginContext<TPlugin> where TPlugin : IPlugin
     {
@@ -42,7 +42,7 @@ namespace AthenaBot.Plugins
             _resolver = new AssemblyDependencyResolver(FilePath);
         }
 
-        protected override Assembly Load(AssemblyName assemblyName) { 
+        protected override Assembly Load(AssemblyName assemblyName) {
             //check if the assembly we need is already loaded
             //Since AssemblyDependencyResolver just assumes everything is in the 'FilePath' folder.
             //For example, if AthenaBot.Core.dll is present in the plugin's directory,
@@ -53,7 +53,7 @@ namespace AthenaBot.Plugins
             //resolve normally
             //Since AssemblyDependencyResolver just assumes everything is in the 'FilePath' folder.
             string assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
-            if (string.IsNullOrEmpty(assemblyPath)) 
+            if (string.IsNullOrEmpty(assemblyPath))
                 return null;
             return LoadFromAssemblyPath(assemblyPath);
         }
@@ -61,7 +61,7 @@ namespace AthenaBot.Plugins
         protected override IntPtr LoadUnmanagedDll(string unmanagedDllName) {
             //this method will generally be unused by the majority of plugins.
             string libraryPath = _resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
-            if (string.IsNullOrEmpty(libraryPath)) 
+            if (string.IsNullOrEmpty(libraryPath))
                 return IntPtr.Zero;
             return LoadUnmanagedDllFromPath(libraryPath);
         }

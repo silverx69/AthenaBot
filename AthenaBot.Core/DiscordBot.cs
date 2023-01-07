@@ -83,11 +83,17 @@ namespace AthenaBot
             await Client?.StopAsync();
             await Persistence.SaveModelAsync(Config, configFile);
 
+            if (Plugins != null) {
+                Plugins.Dispose();
+                Plugins = null;
+            }
+
             if (commands != null) {
                 commands.CommandService.Log -= LogHandler;
                 commands.InteractionService.Log -= LogHandler;
                 commands = null;
             }
+
             if (Client != null) {
                 Client.LoggedIn -= LoggedIn;
                 Client.Ready -= ClientReady;
@@ -99,7 +105,7 @@ namespace AthenaBot
         }
 
         public void Dispose() {
-            StopAsync().RunSynchronously();
+            StopAsync().Wait();
             GC.SuppressFinalize(this);
         }
 
@@ -108,7 +114,8 @@ namespace AthenaBot
         }
 
         private async Task ClientReady() {
-            await Client.SetGameAsync(Config.BotStatus);
+            if (Config.Activity != null)
+                await Client.SetActivityAsync(Config.Activity);
             await commands.InstallInteractionsAsync();
         }
 
@@ -146,7 +153,7 @@ namespace AthenaBot
         public bool ValidateCommandRoles(DiscordBotCommandContext context, CommandInfo cmd) {
             var user = context.User as SocketGuildUser;
             var channel = context.Channel as SocketGuildChannel;
-            
+
             ServerConfig config = FindConfig(context.Guild.Id);
             if (config == null) {
                 config = new ServerConfig(context.Guild.Id);

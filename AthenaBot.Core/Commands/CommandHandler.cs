@@ -94,7 +94,7 @@ namespace AthenaBot.Commands
                 await InstallPluginCommandsAsync(ctx);
         }
 
-        private async Task<PluginCommands> InstallPluginCommandsAsync(PluginContext<DiscordBotPlugin> context) {       
+        private async Task<PluginCommands> InstallPluginCommandsAsync(PluginContext<DiscordBotPlugin> context) {
             var cmds = new PluginCommands(context);
 
             foreach (Assembly asm in context.Assemblies)
@@ -105,7 +105,7 @@ namespace AthenaBot.Commands
         }
 
         private async Task InstallPluginCommandsFromAssemblyAsync(PluginCommands cmds, Assembly assembly) {
-            foreach (Type t in assembly.GetExportedTypes()) { 
+            foreach (Type t in assembly.GetExportedTypes()) {
                 if (commandModuleType.IsAssignableFrom(t))
                     cmds.CommandModules.Add(await CommandService.AddModuleAsync(t, null));
 

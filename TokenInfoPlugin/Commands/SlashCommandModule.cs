@@ -1,24 +1,17 @@
 ﻿using AthenaBot;
 using AthenaBot.Commands;
-using Discord;
 using Discord.Interactions;
-using System.Text;
 
 namespace TokenInfoPlugin.Commands
 {
-    [Group("token", "TokenInfo Plugin Command Group")]
     public class SlashCommandModule : DiscordBotInteractionModule
     {
-        static TokenInfoPlugin Plugin {
-            get { return TokenInfoPlugin.Self; }
-        }
-
         [SlashCommand("price", "Displays a currency's current price.")]
         public async Task Price([Summary(description: "The ID of the token to display.")] string id = null) {
             try {
-                await FollowupAsync(embed: await TokenInfoCommands.GetPriceAsync(id));
+                await FollowupAsync(embed: await TokenInfoCommands.GetPriceAsync(Context.Guild.Id, id));
             }
-            catch(TokenInfoException tex) {
+            catch (TokenInfoException tex) {
                 await FollowupAsync(tex.Message);
             }
             catch (Exception ex) {
@@ -27,10 +20,10 @@ namespace TokenInfoPlugin.Commands
             }
         }
 
-        [SlashCommand("info", "Shows detailed information about a currency.")]
-        public async Task Info([Summary(description: "The ID of the token to display.")] string id = null) {
+        [SlashCommand("token", "Shows detailed information about a currency.")]
+        public async Task Token([Summary(description: "The ID of the token to display.")] string id = null) {
             try {
-                await FollowupAsync(embed: await TokenInfoCommands.GetInfoAsync(id));
+                await FollowupAsync(embed: await TokenInfoCommands.GetInfoAsync(Context.Guild.Id, id));
             }
             catch (TokenInfoException tex) {
                 await FollowupAsync(tex.Message);

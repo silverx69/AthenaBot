@@ -7,6 +7,9 @@ namespace AthenaBot.Configuration
         [JsonPropertyName("id")]
         public ulong Id { get; set; }
 
+        [JsonPropertyName("comment")]
+        public string Comment { get; set; }
+
         [JsonPropertyName("commands")]
         public ModelList<CommandConfig> Commands { get; set; }
 

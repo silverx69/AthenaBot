@@ -10,7 +10,7 @@ namespace AthenaBot.Commands
             private set;
         }
 
-        internal DiscordBotCommandContext(DiscordBot bot, SocketUserMessage msg) 
+        internal DiscordBotCommandContext(DiscordBot bot, SocketUserMessage msg)
             : base(bot.Client, msg) {
             Bot = bot;
         }
