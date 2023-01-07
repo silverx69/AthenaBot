@@ -21,7 +21,7 @@
             base.OnError(name, method, ex);
         }
 
-        protected override void OnPluginLoaded(LoadedPlugin<DiscordBotPlugin> plugin) {
+        protected override void OnPluginLoaded(PluginContext<DiscordBotPlugin> plugin) {
             try {
                 plugin.Plugin.Bot = Bot;
                 plugin.Plugin.Directory = Path.Combine(BaseDirectory, plugin.Name);
@@ -39,7 +39,7 @@
             }
         }
 
-        protected override void OnPluginKilled(LoadedPlugin<DiscordBotPlugin> plugin) {
+        protected override void OnPluginKilled(PluginContext<DiscordBotPlugin> plugin) {
             try {
                 plugin.Plugin.OnPluginKilled();
             }

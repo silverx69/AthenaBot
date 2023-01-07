@@ -19,5 +19,9 @@ namespace AthenaBot.Commands
             : base(bot.Client, interaction) {
             Bot = bot;
         }
+
+        public bool ValidateCommandRoles(ICommandInfo command) {
+            return Bot.ValidateCommandRoles(this, command);
+        }
     }
 }

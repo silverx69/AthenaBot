@@ -33,6 +33,7 @@ namespace AthenaBot.Configuration
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name));
             Name = name;
+            Enabled = true;
             Roles = new ModelList<string>();
             Channels = new ModelList<ChannelsConfig>();
             Extended = new Dictionary<string, object>();

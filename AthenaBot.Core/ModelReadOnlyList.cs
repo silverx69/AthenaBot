@@ -20,50 +20,41 @@ namespace AthenaBot
 
         bool ICollection.IsSynchronized => ((ICollection)InnerList).IsSynchronized;
 
-        protected ModelList<T> InnerList
-        {
+        protected ModelList<T> InnerList {
             get;
             private set;
         }
 
-        protected ModelReadOnlyList()
-        {
+        protected ModelReadOnlyList() {
             InnerList = new ModelList<T>();
         }
 
-        public ModelReadOnlyList(ModelList<T> innerList)
-        {
+        public ModelReadOnlyList(ModelList<T> innerList) {
             InnerList = innerList ?? throw new ArgumentNullException(nameof(innerList));
-            InnerList.PropertyChanged += InnerList_PropertyChanged;
         }
 
-        private void InnerList_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            RaisePropertyChanged(e.PropertyName);
-        }
-
-        public void CopyTo(Array array, int index)
-        {
+        public void CopyTo(Array array, int index) {
             InnerList.CopyTo(array, index);
         }
 
-        public void Sort(Comparison<T> comparison)
-        {
+        public void Sort(Comparison<T> comparison) {
             InnerList.Sort(comparison);
         }
 
-        public IEnumerator<T> GetEnumerator()
-        {
+        public IEnumerator<T> GetEnumerator() {
             return InnerList.GetEnumerator();
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
+        IEnumerator IEnumerable.GetEnumerator() {
             return InnerList.GetEnumerator();
         }
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged
-        {
+        public override event PropertyChangedEventHandler PropertyChanged {
+            add { InnerList.PropertyChanged += value; }
+            remove { InnerList.PropertyChanged -= value; }
+        }
+
+        public event NotifyCollectionChangedEventHandler CollectionChanged {
             add { InnerList.CollectionChanged += value; }
             remove { InnerList.CollectionChanged -= value; }
         }

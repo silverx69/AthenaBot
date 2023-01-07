@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace AthenaBot.Plugins
 {
-    public interface IPluginHost<TPlugin> : IReadOnlyObservableCollection<LoadedPlugin<TPlugin>> 
+    public interface IPluginHost<TPlugin> : IReadOnlyObservableCollection<PluginContext<TPlugin>> 
         where TPlugin : IPlugin
     {
         bool LoadPlugin(string name);
@@ -13,5 +13,5 @@ namespace AthenaBot.Plugins
         event PluginEventHandler<TPlugin> Killed;
     }
 
-    public delegate void PluginEventHandler<TPlugin>(object sender, LoadedPlugin<TPlugin> plugin) where TPlugin : IPlugin;
+    public delegate void PluginEventHandler<TPlugin>(object sender, PluginContext<TPlugin> plugin) where TPlugin : IPlugin;
 }

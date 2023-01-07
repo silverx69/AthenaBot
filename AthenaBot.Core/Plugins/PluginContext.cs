@@ -3,8 +3,12 @@ using System.Runtime.Loader;
 
 namespace AthenaBot.Plugins
 {
-    public class PluginContext : AssemblyLoadContext
+    public class PluginContext<TPlugin> : 
+        AssemblyLoadContext,
+        IPluginContext<TPlugin> where TPlugin : IPlugin
     {
+        readonly AssemblyDependencyResolver _resolver;
+
         /// <summary>
         /// The full path to the plugin assembly being loaded.
         /// </summary>
@@ -21,9 +25,18 @@ namespace AthenaBot.Plugins
             private set;
         }
 
-        readonly AssemblyDependencyResolver _resolver;
+        public TPlugin Plugin {
+            get;
+            internal set;
+        }
 
-        public PluginContext(string pluginPath) {
+        internal Assembly Assembly {
+            get;
+            set;
+        }
+
+        public PluginContext(string name, string pluginPath)
+            : base(name, true) {
             PluginPath = Path.GetDirectoryName(pluginPath);
             FilePath = pluginPath;
             _resolver = new AssemblyDependencyResolver(FilePath);
@@ -40,14 +53,16 @@ namespace AthenaBot.Plugins
             //resolve normally
             //Since AssemblyDependencyResolver just assumes everything is in the 'FilePath' folder.
             string assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
-            if (assemblyPath == null) return null;
+            if (string.IsNullOrEmpty(assemblyPath)) 
+                return null;
             return LoadFromAssemblyPath(assemblyPath);
         }
 
         protected override IntPtr LoadUnmanagedDll(string unmanagedDllName) {
             //this method will generally be unused by the majority of plugins.
             string libraryPath = _resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
-            if (libraryPath == null) return IntPtr.Zero;
+            if (string.IsNullOrEmpty(libraryPath)) 
+                return IntPtr.Zero;
             return LoadUnmanagedDllFromPath(libraryPath);
         }
     }

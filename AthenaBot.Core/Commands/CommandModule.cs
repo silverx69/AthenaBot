@@ -10,7 +10,6 @@ namespace AthenaBot.Commands
             var eb = new EmbedBuilder {
                 Title = "Loaded Plugins",
                 Description = Context.Bot.Plugins
-                    .Where(s => s.Enabled)
                     .Select(s => s.Name)
                     .Join("\r\n")
             };

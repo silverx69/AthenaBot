@@ -21,8 +21,7 @@ namespace AthenaBot
         /// <param name="propertyName">The name of the property being changed. Compiler attribute CallerMemberName will be auto-filled if not supplied.</param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
-        protected void OnPropertyChanged<T>(Expression<Func<T>> fieldSelector, T newValue, [CallerMemberName] string propertyName = null)
-        {
+        protected void OnPropertyChanged<T>(Expression<Func<T>> fieldSelector, T newValue, [CallerMemberName] string propertyName = null) {
             if (fieldSelector.Body is not MemberExpression body)
                 throw new ArgumentException("Field selector must be a member access expression.", nameof(fieldSelector));
 
@@ -31,8 +30,7 @@ namespace AthenaBot
 
             T oldValue = (T)member.GetValue(this);
 
-            if (!Equals(oldValue, newValue))
-            {
+            if (!Equals(oldValue, newValue)) {
                 member.SetValue(this, newValue);
                 OnPropertyChanging(propertyName);
             }
@@ -48,8 +46,7 @@ namespace AthenaBot
         /// <param name="newValue">The new value of the field.</param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
-        protected void OnPropertyChanged<T>(Expression<Func<T>> propSelector, Expression<Func<T>> fieldSelector, T newValue)
-        {
+        protected void OnPropertyChanged<T>(Expression<Func<T>> propSelector, Expression<Func<T>> fieldSelector, T newValue) {
             if (fieldSelector.Body is not MemberExpression body)
                 throw new ArgumentException("Field selector must be a member access expression.", nameof(fieldSelector));
 
@@ -58,8 +55,7 @@ namespace AthenaBot
 
             T oldValue = (T)member.GetValue(this);
 
-            if (!Equals(oldValue, newValue))
-            {
+            if (!Equals(oldValue, newValue)) {
                 body = propSelector.Body as MemberExpression;
                 if (body == null) throw new ArgumentException("Property selector must be a member access expression.", nameof(propSelector));
 
@@ -77,8 +73,7 @@ namespace AthenaBot
         /// <param name="propSelector">The property that changed.</param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
-        protected void OnPropertyChanged<T>(Expression<Func<T>> propSelector)
-        {
+        protected void OnPropertyChanged<T>(Expression<Func<T>> propSelector) {
             if (propSelector.Body is not MemberExpression body)
                 throw new ArgumentException("Property selector must be a member access expression.", nameof(propSelector));
 
@@ -92,8 +87,7 @@ namespace AthenaBot
         /// Raises the PropertyChanged event using the CallerMemberName
         /// </summary>
         /// <param name="propertyName">The name of the property that changed.</param>
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) {
             if (!string.IsNullOrEmpty(propertyName))
                 OnPropertyChanging(propertyName);
         }
@@ -101,20 +95,18 @@ namespace AthenaBot
         /// Provides a mechanism for overriding, or preventing a PropertyChanged event on some extra condition.
         /// </summary>
         /// <param name="propertyName">The name of the property that changed.</param>
-        protected virtual void OnPropertyChanging(string propertyName)
-        {
+        protected virtual void OnPropertyChanging(string propertyName) {
             RaisePropertyChanged(propertyName);
         }
         /// <summary>
         /// Raises the Propertycnanged event
         /// </summary>
         /// <param name="propertyName">The name of the property that changed.</param>
-        protected void RaisePropertyChanged(string propertyName)
-        {
+        protected void RaisePropertyChanged(string propertyName) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         //INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
+        public virtual event PropertyChangedEventHandler PropertyChanged;
     }
 }

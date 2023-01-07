@@ -17,6 +17,9 @@ namespace TokenInfoPlugin.Configuration
         [JsonPropertyName("default")]
         public bool Default { get; set; }
 
+        [JsonPropertyName("aliases")]
+        public List<string> Aliases { get; set; }
+
         [JsonPropertyName("dev_wallets")]
         public List<string> DevWallets { get; set; }
 
@@ -25,6 +28,7 @@ namespace TokenInfoPlugin.Configuration
 
         public TokenConfig() {
             Enabled = true;
+            Aliases = new List<string>();
             DevWallets = new List<string>();
             BurnWallets = new List<string>();
         }

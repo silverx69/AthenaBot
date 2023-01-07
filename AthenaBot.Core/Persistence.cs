@@ -1,12 +1,11 @@
 ﻿namespace AthenaBot
 {
-   /// <summary>
-   /// A simple class utilizing serialization to read and write typed objects to/from files as json.
-   /// </summary>
+    /// <summary>
+    /// A simple class utilizing serialization to read and write typed objects to/from files as json.
+    /// </summary>
     public static class Persistence
     {
-        public static T LoadModel<T>(string filename) where T : new()
-        {
+        public static T LoadModel<T>(string filename) where T : new() {
             if (!File.Exists(filename))
                 return new T();
 
@@ -18,8 +17,7 @@
             return ret;
         }
 
-        public static async Task<T> LoadModelAsync<T>(string filename) where T : new()
-        {
+        public static async Task<T> LoadModelAsync<T>(string filename) where T : new() {
             if (!File.Exists(filename))
                 return new T();
 
@@ -31,8 +29,7 @@
             return ret;
         }
 
-        public static void SaveModel<T>(this T model, string filename)
-        {
+        public static void SaveModel<T>(this T model, string filename) {
             string content = Json.Serialize(model);
             using var sw = new StreamWriter(File.Open(filename, FileMode.Create, FileAccess.Write));
 
@@ -40,8 +37,7 @@
             sw.Flush();
         }
 
-        public static async Task SaveModelAsync<T>(this T model, string filename)
-        {
+        public static async Task SaveModelAsync<T>(this T model, string filename) {
             string content = Json.Serialize(model);
             using var sw = new StreamWriter(File.Open(filename, FileMode.Create, FileAccess.Write));
 

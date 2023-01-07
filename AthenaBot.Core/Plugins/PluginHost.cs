@@ -1,10 +1,10 @@
-﻿using System.Collections;
+﻿using System.Runtime.Loader;
 
 namespace AthenaBot.Plugins
 {
     public abstract class PluginHost<TPlugin> :
-        ModelReadOnlyList<LoadedPlugin<TPlugin>>,
-        IPluginHost<TPlugin> 
+        ModelReadOnlyList<PluginContext<TPlugin>>,
+        IPluginHost<TPlugin>
         where TPlugin : IPlugin
     {
         public string BaseDirectory {
@@ -17,10 +17,6 @@ namespace AthenaBot.Plugins
         }
 
         public bool LoadPlugin(string name) {
-            return LoadPlugin(name, true);
-        }
-
-        protected virtual bool LoadPlugin(string name, bool enable) {
             string lowname = name.ToLower();
 
             if (lowname.EndsWith(".dll")) {
@@ -30,34 +26,31 @@ namespace AthenaBot.Plugins
 
             lock (SyncRoot) {
                 int index = this.FindIndex(s => s.Name.ToLower() == lowname);
-
-                if (index > -1) {
-                    EnablePlugin(this[index]);
-                    return true;
-                }
+                if (index > -1) return true;
             }
 
             try {
-                var context = GetPluginContext(name);
+                var context = GetPluginContext<TPlugin>(name);
                 if (context == null) return false;
 
-                var assembly = context.LoadFromAssemblyPath(context.FilePath);
+                context.Assembly = context.LoadFromAssemblyPath(context.FilePath);
 
                 Type impl = null;
                 Type pluginType = typeof(TPlugin);
 
-                foreach (var type in assembly.GetExportedTypes()) {
+                foreach (var type in context.Assembly.GetExportedTypes()) {
                     if (pluginType.IsAssignableFrom(type))
                         impl = type;
                 }
 
                 if (impl == null)
-                    throw new PluginLoadException("Specified plugin does not contain a valid IPlugin implementation.");
+                    throw new PluginLoadException("Assembly does not contain a valid IPlugin implementation.");
 
-                var plugin = new LoadedPlugin<TPlugin>(name, (TPlugin)Activator.CreateInstance(impl), assembly);
+                context.Plugin = (TPlugin)Activator.CreateInstance(impl);
 
-                lock (SyncRoot) InnerList.Add(plugin);
-                if (enable) EnablePlugin(plugin);
+                lock (SyncRoot) InnerList.Add(context);
+
+                OnPluginLoaded(context);
 
                 return true;
             }
@@ -70,54 +63,46 @@ namespace AthenaBot.Plugins
             return false;
         }
 
-        protected void EnablePlugin(LoadedPlugin<TPlugin> plugin) {
-            if (plugin.Enabled)
-                DisablePlugin(plugin);
-            plugin.Enabled = true;
-            RaisePropertyChanged(nameof(Count));
-            OnPluginLoaded(plugin);
-        }
-
-        protected void DisablePlugin(LoadedPlugin<TPlugin> plugin) {
-            if (plugin.Enabled) {
-                plugin.Enabled = false;
-                RaisePropertyChanged(nameof(Count));
-                OnPluginKilled(plugin);
-            }
-        }
-
         public void KillPlugin(string name) {
+            PluginContext<TPlugin> context;
+
             lock (SyncRoot) {
                 string lowname = name.ToLower();
+
                 int index = this.FindIndex(s => s.Name.ToLower() == lowname);
-
                 if (index == -1) return;
-                DisablePlugin(this[index]);
+
+                context = this[index];
+                InnerList.RemoveAt(index);
             }
+
+            context.Unloading += OnPluginUnloading;
+            context.Unload();
+
+            OnPluginKilled(context);
+        }
+
+        protected abstract void OnPluginLoaded(PluginContext<TPlugin> context);
+
+        protected abstract void OnPluginKilled(PluginContext<TPlugin> context);
+
+        //Occurs when the plugin assembly is actually unloaded by the runtime
+        protected virtual async void OnPluginUnloading(AssemblyLoadContext ctx) {
+            ctx.Unloading -= OnPluginUnloading;
+            await Logging.InfoAsync("PluginHost", "The plugin \"{0}\" has been unloaded.", ctx.Name);
         }
 
 
-        protected virtual PluginContext GetPluginContext(string dllname) {
-            return new PluginContext(Path.Combine(BaseDirectory, dllname, dllname + ".dll"));
-        }
-
-
-        protected abstract void OnPluginLoaded(LoadedPlugin<TPlugin> plugin);
-
-        protected abstract void OnPluginKilled(LoadedPlugin<TPlugin> plugin);
-
-
-        protected virtual void OnError(LoadedPlugin<TPlugin> plugin, string method, Exception ex) {
-            OnError(plugin.Name, method, ex);
+        protected virtual void OnError(PluginContext<TPlugin> context, string method, Exception ex) {
+            OnError(context.Name, method, ex);
         }
 
         protected virtual void OnError(string name, string method, Exception ex) {
             var error = new PluginErrorInfo(name, method, ex);
 
-            foreach (var plugin in this) {
+            foreach (var context in this) {
                 try {
-                    if (plugin.Enabled)
-                        plugin.Plugin.OnError(error);
+                    context.Plugin.OnError(error);
                 }
                 catch {
                     /* do not route back into the plugins.. possible stack overflow */
@@ -126,12 +111,16 @@ namespace AthenaBot.Plugins
         }
 
 
-        protected void RaisePluginLoaded(LoadedPlugin<TPlugin> plugin) {
-            Loaded?.Invoke(this, plugin);
+        protected void RaisePluginLoaded(PluginContext<TPlugin> context) {
+            Loaded?.Invoke(this, context);
         }
 
-        protected void RaisePluginKilled(LoadedPlugin<TPlugin> plugin) {
-            Killed?.Invoke(this, plugin);
+        protected void RaisePluginKilled(PluginContext<TPlugin> context) {
+            Killed?.Invoke(this, context);
+        }
+
+        protected virtual PluginContext<T> GetPluginContext<T>(string dllname) where T : IPlugin {
+            return new PluginContext<T>(dllname, Path.Combine(BaseDirectory, dllname, dllname + ".dll"));
         }
 
         public event PluginEventHandler<TPlugin> Loaded;

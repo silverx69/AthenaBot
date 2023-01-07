@@ -11,24 +11,20 @@ namespace AthenaBot
         readonly Action<object> m_execute;
         readonly Predicate<object> m_canExecute;
 
-        public ModelCommand(Action<object> execute, Predicate<object> canExecute = null)
-        {
+        public ModelCommand(Action<object> execute, Predicate<object> canExecute = null) {
             m_execute = execute ?? throw new ArgumentNullException(nameof(execute));
             m_canExecute = canExecute;
         }
 
-        public bool CanExecute(object parameter)
-        {
+        public bool CanExecute(object parameter) {
             return m_canExecute?.Invoke(parameter) ?? true;
         }
 
-        public void Execute(object parameter)
-        {
+        public void Execute(object parameter) {
             m_execute.Invoke(parameter);
         }
 
-        public void Update()
-        {
+        public void Update() {
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
 

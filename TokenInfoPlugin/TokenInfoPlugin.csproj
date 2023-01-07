@@ -15,4 +15,8 @@
   <ItemGroup>
     <ProjectReference Include="..\AthenaBot.Core\AthenaBot.Core.csproj" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="mkdir &quot;%25APPDATA%25\AthenaBot\Plugins\$(TargetName)\&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName)*&quot; &quot;%25APPDATA%25\AthenaBot\Plugins\$(TargetName)\*&quot;&#xD;&#xA;copy &quot;$(TargetDir)CoinGecko.dll&quot; &quot;%25APPDATA%25\AthenaBot\Plugins\$(TargetName)\*&quot;&#xD;&#xA;copy &quot;$(TargetDir)BscScan.NetCore.dll&quot; &quot;%25APPDATA%25\AthenaBot\Plugins\$(TargetName)\*&quot;" />
+  </Target>
 </Project>

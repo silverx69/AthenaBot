@@ -8,7 +8,7 @@ using Discord.WebSocket;
 
 namespace AthenaBot
 {
-    public class DiscordBot : ModelBase, IDiscordBot, IDisposable 
+    public class DiscordBot : ModelBase, IDiscordBot, IDisposable
     {
         Directories directories = null;
         DiscordBotConfig config = null;
@@ -38,11 +38,11 @@ namespace AthenaBot
             private set { OnPropertyChanged(() => plugins, value); }
         }
 
-        public DiscordBot() 
-            : this (new Directories()) { }
+        public DiscordBot()
+            : this(new Directories()) { }
 
-        public DiscordBot(string appDataDirectory) 
-            : this (new Directories(appDataDirectory)) { }
+        public DiscordBot(string appDataDirectory)
+            : this(new Directories(appDataDirectory)) { }
 
         public DiscordBot(Directories directories) {
             Directories = directories ?? new Directories();
@@ -143,10 +143,13 @@ namespace AthenaBot
                 await Logging.ErrorAsync(m.Severity.ToLogLevel(), "Gateway", m.Exception);
         }
 
-        public bool ValidateCommandRoles(SocketGuild guild, SocketGuildChannel channel, SocketGuildUser user, CommandInfo cmd) {
-            ServerConfig config = FindConfig(guild.Id);
+        public bool ValidateCommandRoles(DiscordBotCommandContext context, CommandInfo cmd) {
+            var user = context.User as SocketGuildUser;
+            var channel = context.Channel as SocketGuildChannel;
+            
+            ServerConfig config = FindConfig(context.Guild.Id);
             if (config == null) {
-                config = new ServerConfig(guild.Id);
+                config = new ServerConfig(context.Guild.Id);
                 Config.Servers.Add(config);
             }
 
@@ -157,14 +160,16 @@ namespace AthenaBot
                 config.Commands.Add(ccmd);
             }
 
-            return ValidateCommandRoles(guild, channel, user, ccmd);
+            return ValidateCommandRoles(context.Guild, channel, user, ccmd);
         }
 
-        public bool ValidateCommandRoles(SocketGuild guild, SocketGuildChannel channel, SocketGuildUser user, ICommandInfo cmd) {
+        public bool ValidateCommandRoles(DiscordBotInteractionContext context, ICommandInfo cmd) {
+            var user = context.User as SocketGuildUser;
+            var channel = context.Channel as SocketGuildChannel;
 
-            ServerConfig config = FindConfig(guild.Id);
+            ServerConfig config = FindConfig(context.Guild.Id);
             if (config == null) {
-                config = new ServerConfig(guild.Id);
+                config = new ServerConfig(context.Guild.Id);
                 Config.Servers.Add(config);
             }
 
@@ -176,11 +181,11 @@ namespace AthenaBot
                 config.Commands.Add(ccmd);
             }
 
-            return ValidateCommandRoles(guild, channel, user, ccmd);
+            return ValidateCommandRoles(context.Guild, channel, user, ccmd);
         }
 
         private static bool ValidateCommandRoles(SocketGuild guild, SocketGuildChannel channel, SocketGuildUser user, CommandConfig ccmd) {
-            
+
             ChannelsConfig chanConfig = ccmd.Channels.Find(s => s.Name == channel.Name);
             if (chanConfig == null) {
                 chanConfig = new ChannelsConfig(channel.Name, ccmd.Enabled);

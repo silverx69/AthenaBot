@@ -1,6 +1,4 @@
-﻿using AthenaBot.Configuration;
-using AthenaBot.Plugins;
-using Discord;
+﻿using AthenaBot.Plugins;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -13,22 +11,25 @@ namespace AthenaBot.Commands
         readonly DiscordBot bot;
         readonly List<PluginCommands> pluginCommands;
 
+        static readonly Type commandModuleType = typeof(DiscordBotCommandModule);
+        static readonly Type interactionModuleType = typeof(DiscordBotInteractionModule);
+
         public CommandService CommandService { get; private set; }
 
         public InteractionService InteractionService { get; private set; }
 
         class PluginCommands
         {
-            public LoadedPlugin<DiscordBotPlugin> Plugin { get; set; }
+            public PluginContext<DiscordBotPlugin> Context { get; set; }
             public List<Discord.Commands.ModuleInfo> CommandModules { get; set; }
             public List<Discord.Interactions.ModuleInfo> InteractionModules { get; set; }
             public PluginCommands() {
                 CommandModules = new List<Discord.Commands.ModuleInfo>();
                 InteractionModules = new List<Discord.Interactions.ModuleInfo>();
             }
-            public PluginCommands(LoadedPlugin<DiscordBotPlugin> plugin)
+            public PluginCommands(PluginContext<DiscordBotPlugin> context)
                 : this() {
-                Plugin = plugin;
+                Context = context;
             }
         }
 
@@ -48,17 +49,17 @@ namespace AthenaBot.Commands
             InteractionService = new InteractionService(bot.Client, new InteractionServiceConfig());
         }
 
-        private async void OnPluginLoaded(object sender, LoadedPlugin<DiscordBotPlugin> plugin) {
+        private async void OnPluginLoaded(object sender, PluginContext<DiscordBotPlugin> ctx) {
 
-            var cmds = await InstallPluginCommandsAsync(plugin);
+            var cmds = await InstallPluginCommandsAsync(ctx);
 
             if (cmds.InteractionModules.Count > 0)
                 foreach (var guild in bot.Client.Guilds)
                     await InteractionService.AddModulesToGuildAsync(guild.Id, false, cmds.InteractionModules.ToArray());
         }
 
-        private async void OnPluginKilled(object sender, LoadedPlugin<DiscordBotPlugin> plugin) {
-            var idx = pluginCommands.FindIndex(s => s.Plugin == plugin);
+        private async void OnPluginKilled(object sender, PluginContext<DiscordBotPlugin> ctx) {
+            var idx = pluginCommands.FindIndex(s => s.Context == ctx);
             if (idx > -1) {
                 var cmds = pluginCommands[idx];
                 pluginCommands.RemoveAt(idx);
@@ -89,18 +90,28 @@ namespace AthenaBot.Commands
             await InteractionService.AddModulesAsync(asm, null);
 
             //install commands defined in loaded plugin assemblies
-            foreach (var plugin in bot.Plugins)
-                await InstallPluginCommandsAsync(plugin);
+            foreach (var ctx in bot.Plugins)
+                await InstallPluginCommandsAsync(ctx);
         }
 
-        private async Task<PluginCommands> InstallPluginCommandsAsync(LoadedPlugin<DiscordBotPlugin> plugin) {       
-            var cmds = new PluginCommands(plugin);
+        private async Task<PluginCommands> InstallPluginCommandsAsync(PluginContext<DiscordBotPlugin> context) {       
+            var cmds = new PluginCommands(context);
 
-            cmds.CommandModules.AddRange(await CommandService.AddModulesAsync(plugin.Assembly, null));
-            cmds.InteractionModules.AddRange(await InteractionService.AddModulesAsync(plugin.Assembly, null));
+            foreach (Assembly asm in context.Assemblies)
+                await InstallPluginCommandsFromAssemblyAsync(cmds, asm);
 
             pluginCommands.Add(cmds);
             return cmds;
+        }
+
+        private async Task InstallPluginCommandsFromAssemblyAsync(PluginCommands cmds, Assembly assembly) {
+            foreach (Type t in assembly.GetExportedTypes()) { 
+                if (commandModuleType.IsAssignableFrom(t))
+                    cmds.CommandModules.Add(await CommandService.AddModuleAsync(t, null));
+
+                else if (interactionModuleType.IsAssignableFrom(t))
+                    cmds.InteractionModules.Add(await InteractionService.AddModuleAsync(t, null));
+            }
         }
 
         public async Task InstallInteractionsAsync() {
