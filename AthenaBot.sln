@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TokenInfoPlugin", "TokenInf
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenSeaPlugin", "OpenSeaPlugin\OpenSeaPlugin.csproj", "{B2034967-2256-478D-AB08-253E3C8199C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranslatePlugin", "TranslatePlugin\TranslatePlugin.csproj", "{B5D7784E-FD4D-43B8-8E0B-2F42CA82706C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{B2034967-2256-478D-AB08-253E3C8199C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2034967-2256-478D-AB08-253E3C8199C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2034967-2256-478D-AB08-253E3C8199C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5D7784E-FD4D-43B8-8E0B-2F42CA82706C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5D7784E-FD4D-43B8-8E0B-2F42CA82706C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5D7784E-FD4D-43B8-8E0B-2F42CA82706C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5D7784E-FD4D-43B8-8E0B-2F42CA82706C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -42,6 +48,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{C4B38944-AA38-4867-9C84-D2B375657C03} = {21CB1CA2-6640-4642-96A1-9D5FC7A86962}
 		{B2034967-2256-478D-AB08-253E3C8199C3} = {21CB1CA2-6640-4642-96A1-9D5FC7A86962}
+		{B5D7784E-FD4D-43B8-8E0B-2F42CA82706C} = {21CB1CA2-6640-4642-96A1-9D5FC7A86962}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E7E177DD-B099-4005-AAEC-878AD7DFEBE2}

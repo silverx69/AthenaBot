@@ -1,45 +1,56 @@
 ﻿using AthenaBot;
+using Discord;
 using System.Text.Json.Serialization;
 
 namespace TokenInfoPlugin
 {
     public class TokenInfo : ModelBase
     {
-        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonPropertyName("homepage")]
         public string Homepage { get; set; }
 
-        [JsonPropertyName("thumbnail")]
         public string Thumbnail { get; internal set; }
 
-        [JsonPropertyName("price")]
+        public Color Color { get; set; }
+
+        public long Rank { get; set; }
+
         public decimal Price { get; set; }
 
-        [JsonPropertyName("marketCap")]
+        public decimal Volume24h { get; set; }
+
         public decimal MarketCap { get; set; }
 
-        [JsonPropertyName("totalSupply")]
+        public decimal MarketCapLive { get; set; }
+
         public decimal TotalSupply { get; set; }
 
-        [JsonPropertyName("circulatingSupply")]
         public decimal CirculatingSupply { get; set; }
 
-        [JsonPropertyName("treasury")]
         public decimal Treasury { get; set; }
 
-        [JsonPropertyName("burned")]
         public decimal Burned { get; set; }
 
-        [JsonPropertyName("contracts")]
+        public double PriceChange1h { get; set; }
+
+        public double PriceChange24h { get; set; }
+
+        public double PriceChange7d { get; set; }
+
+        public double PriceChange14d { get; set; }
+
+        public double PriceChange30d { get; set; }
+
+        public double PriceChange60d { get; set; }
+
         public Dictionary<string, string> Contracts { get; set; }
 
         [JsonIgnore]
         public DateTime LastUpdate { get; set; }
 
         public TokenInfo()
-            : this(DateTime.Now) { }
+            : this(DateTime.UtcNow) { }
 
         public TokenInfo(DateTime update) {
             LastUpdate = update.Subtract(TimeSpan.FromMinutes(10));

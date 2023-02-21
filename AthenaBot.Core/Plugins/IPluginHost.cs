@@ -10,5 +10,5 @@
         event PluginEventHandler<TPlugin> Killed;
     }
 
-    public delegate void PluginEventHandler<TPlugin>(object sender, PluginContext<TPlugin> plugin) where TPlugin : IPlugin;
+    public delegate void PluginEventHandler<TPlugin>(PluginContext<TPlugin> plugin) where TPlugin : IPlugin;
 }

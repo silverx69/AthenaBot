@@ -17,12 +17,10 @@ namespace OpenSeaPlugin
 
         public override void OnPluginLoaded() {
             Config = Persistence.LoadModel<PluginConfig>(Path.Combine(Directory, "config.json"));
-            //Bot.Client.MessageReceived += Client_MessageReceived;
         }
 
         public override void OnPluginKilled() {
             Persistence.SaveModel(Config, Path.Combine(Directory, "config.json"));
-            //Bot.Client.MessageReceived -= Client_MessageReceived;
         }
     }
 }

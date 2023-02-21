@@ -49,7 +49,7 @@ namespace AthenaBot.Commands
             InteractionService = new InteractionService(bot.Client, new InteractionServiceConfig());
         }
 
-        private async void OnPluginLoaded(object sender, PluginContext<DiscordBotPlugin> ctx) {
+        private async void OnPluginLoaded(PluginContext<DiscordBotPlugin> ctx) {
 
             var cmds = await InstallPluginCommandsAsync(ctx);
 
@@ -58,7 +58,7 @@ namespace AthenaBot.Commands
                     await InteractionService.AddModulesToGuildAsync(guild.Id, false, cmds.InteractionModules.ToArray());
         }
 
-        private async void OnPluginKilled(object sender, PluginContext<DiscordBotPlugin> ctx) {
+        private async void OnPluginKilled(PluginContext<DiscordBotPlugin> ctx) {
             var idx = pluginCommands.FindIndex(s => s.Context == ctx);
             if (idx > -1) {
                 var cmds = pluginCommands[idx];
@@ -134,7 +134,7 @@ namespace AthenaBot.Commands
             if (smsg is not SocketUserMessage message || message.Author.IsBot)
                 return;
 
-            if (!message.Content.StartsWithAny('!', '.', '$') &&
+            if (!message.Content.StartsWithAny('!', '.', '$', '#') &&
                 !message.HasMentionPrefix(bot.Client.CurrentUser, ref argPos)) return;
 
             await CommandService.ExecuteAsync(new DiscordBotCommandContext(bot, message), argPos, null);

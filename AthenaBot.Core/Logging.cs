@@ -1,4 +1,5 @@
 ﻿using Discord;
+using System.Collections.Concurrent;
 using System.Text;
 
 namespace AthenaBot
@@ -13,22 +14,56 @@ namespace AthenaBot
         Debug = 8
     }
 
+    public class LogMessageEventArgs : EventArgs
+    {
+        public LogLevel Level { get; private set; }
+
+        public string Intro { get; private set; }
+
+        public string Message { get; private set; }
+
+        public string StackTrace { get; private set; }
+
+        internal LogMessageEventArgs(LogLevel level, string intro, string message) {
+            Level = level;
+            Intro = intro;
+            Message = message;
+        }
+    }
+
     /// <summary>
     /// A class to simplify logging messages to the various outputs, Debug, Console and hard disk.
     /// </summary>
     public static class Logging
     {
-        static readonly DateTime InitTime = DateTime.Now;
+        static readonly DateTime InitTime;
 
-        public static LogLevel LogLevel { get; set; } = LogLevel.Info;
-        public static string LogDirectory { get; set; } = ".";
+        static volatile bool isWriting = false;
+        static readonly ConcurrentQueue<LogMessageEventArgs> pendingWrites;
+
+        const string LineFormat = "{0} {1}";
+        const string IntroFormat = "[{0}] [{1}] [{2}]";
+        const string ErrorFormat = "{0}: {1}{2}{3}";
+        const string ErrorFormatNoDebug = "{0}: {1}";
+
+        public static LogLevel LogLevel { get; set; }
+
+        public static string LogDirectory { get; set; }
+
+        static Logging() {
+            InitTime = DateTime.Now;
+            isWriting = false;
+            pendingWrites = new ConcurrentQueue<LogMessageEventArgs>();
+            LogLevel = LogLevel.Info;
+            LogDirectory = ".";
+        }
 
         public static void Critical(string source, Exception ex) {
-            WriteLine(LogLevel.Critical, source, "{0}: {1}{2}{3}", ex.GetType().Name, ex.Message, Environment.NewLine, ex.StackTrace);
+            WriteLine(LogLevel.Critical, source, ErrorFormat, ex.GetType().Name, ex.Message, Environment.NewLine, ex.StackTrace);
         }
 
         public static Task CriticalAsync(string source, Exception ex) {
-            return WriteLineAsync(LogLevel.Critical, source, "{0}: {1}{2}{3}", ex.GetType().Name, ex.Message, Environment.NewLine, ex.StackTrace);
+            return WriteLineAsync(LogLevel.Critical, source, ErrorFormat, ex.GetType().Name, ex.Message, Environment.NewLine, ex.StackTrace);
         }
 
         public static void Error(string source, Exception ex) {
@@ -37,9 +72,9 @@ namespace AthenaBot
 
         public static void Error(LogLevel level, string source, Exception ex) {
             if (LogLevel >= LogLevel.Debug)
-                WriteLine(level, source, "{0}: {1}{2}{3}", ex.GetType().Name, ex.Message, Environment.NewLine, ex.StackTrace);
+                WriteLine(level, source, ErrorFormat, ex.GetType().Name, ex.Message, Environment.NewLine, ex.StackTrace);
             else
-                WriteLine(level, source, "{0}: {1}", ex.GetType().Name, ex.Message);
+                WriteLine(level, source, ErrorFormatNoDebug, ex.GetType().Name, ex.Message);
         }
 
         public static Task ErrorAsync(string source, Exception ex) {
@@ -48,9 +83,9 @@ namespace AthenaBot
 
         public static Task ErrorAsync(LogLevel level, string source, Exception ex) {
             if (LogLevel >= LogLevel.Debug)
-                return WriteLineAsync(level, source, "{0}: {1}{2}{3}", ex.GetType().Name, ex.Message, Environment.NewLine, ex.StackTrace);
+                return WriteLineAsync(level, source, ErrorFormat, ex.GetType().Name, ex.Message, Environment.NewLine, ex.StackTrace);
             else
-                return WriteLineAsync(level, source, "{0}: {1}", ex.GetType().Name, ex.Message);
+                return WriteLineAsync(level, source, ErrorFormatNoDebug, ex.GetType().Name, ex.Message);
         }
 
         public static void Error(string source, string message, params object[] args) {
@@ -95,17 +130,30 @@ namespace AthenaBot
 
         public static async Task WriteLineAsync(LogLevel level, string source, string format, params object[] args) {
             if (level <= LogLevel) {
-                using var writer = GetWriter();
-                await writer.WriteLineAsync(BuildLine(level, source, format, args));
-                await writer.FlushAsync();
+                pendingWrites.Enqueue(BuildLine(level, source, format, args));
+                if (!isWriting) {
+                    isWriting = true;
+                    using var writer = GetWriter();
+                    await ClearQueueAsync(writer);
+                    await writer.FlushAsync();
+                    await writer.DisposeAsync();
+                    isWriting = false;
+                }
             }
         }
 
-        private static string BuildLine(LogLevel level, string source, string format, params object[] args) {
-            string intro = string.Format("[{0}] [{1}] [{2}]", DateTime.Now.ToString(), source, level);
-            string message = string.Format(format, args);
-            LogMessage?.Invoke(level, intro, message);
-            return intro + " " + message;
+        private static async Task ClearQueueAsync(StreamWriter writer) {
+            while (pendingWrites.TryDequeue(out LogMessageEventArgs e)) {
+                LogMessage?.Invoke(e);
+                await writer.WriteLineAsync(string.Format(LineFormat, e.Intro, e.Message));
+            }
+        }
+
+        private static LogMessageEventArgs BuildLine(LogLevel level, string source, string format, params object[] args) {
+            return new LogMessageEventArgs(
+                level,
+                string.Format(IntroFormat, DateTime.Now.ToString(), source, level),
+                string.Format(format, args));
         }
 
         private static StreamWriter GetWriter() {
@@ -113,7 +161,7 @@ namespace AthenaBot
         }
 
         private static string GetFilename() {
-            return Path.Combine(LogDirectory, InitTime.ToString("dd-MM-yyyy") + ".txt");
+            return Path.Combine(LogDirectory, InitTime.ToString("yyyy-MM-dd") + ".txt");
         }
 
         /// <summary>
@@ -132,6 +180,6 @@ namespace AthenaBot
         }
 
         public static event LogMessageHandler LogMessage;
-        public delegate void LogMessageHandler(LogLevel level, string intro, string message);
+        public delegate void LogMessageHandler(LogMessageEventArgs e);
     }
 }

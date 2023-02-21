@@ -8,8 +8,13 @@ namespace OpenSeaPlugin.Commands
         const string OpenSeaUri = "https://opensea.io/collection/{0}";
 
         public static string ValidateCollection(ulong guildId, string collection) {
-            if (string.IsNullOrWhiteSpace(collection)) {
-                var config = OpenSeaPlugin.Config.Collections.Find(s => s.Server == guildId && s.Default);
+            var server = OpenSeaPlugin.Config.Servers.Find(s => s.Id == guildId);
+            if (server == null) {
+                server = new Configuration.ServerConfig();
+                OpenSeaPlugin.Config.Servers.Add(server);
+            }
+            if (!server.AnyCollection || string.IsNullOrWhiteSpace(collection)) {
+                var config = server.Collections.Find(s => s.Default);
                 return config?.Slug ?? string.Empty;
             }
             return collection;
@@ -31,10 +36,12 @@ namespace OpenSeaPlugin.Commands
                 ThumbnailUrl = oscol.ImageUrl,
                 Url = string.Format(OpenSeaUri, collection)
             };
-            eb.AddField("Items", (long)stats.Count, true);
-            eb.AddField("Owners", stats.Owners, true);
-            eb.AddField("Volume (30d)", string.Format("{0} {1}", (long)stats.ThirtyDayVolume, symbol), true);
-            eb.AddField("Floor", string.Format("{0} {1}", stats.FloorPrice, symbol), true);
+
+            eb.AddField("__Items__", (long)stats.Count);
+            eb.AddField("__Owners__", stats.Owners);
+            eb.AddField("__Volume (30d)__", string.Format("{0:N} {1}", stats.ThirtyDayVolume, symbol));
+            eb.AddField("__Floor__", string.Format("{0:N} {1}", stats.FloorPrice, symbol));
+            eb.WithColor(Color.Blue);
             eb.WithCurrentTimestamp();
 
             return eb.Build();

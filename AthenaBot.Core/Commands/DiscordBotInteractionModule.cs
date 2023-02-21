@@ -6,7 +6,7 @@ namespace AthenaBot.Commands
     {
         public override async Task BeforeExecuteAsync(ICommandInfo command) {
             await DeferAsync();
-            if (!Context.ValidateCommandRoles(command)) {
+            if (Context.Guild != null && !Context.ValidateCommandRoles(command)) {
                 await DeleteOriginalResponseAsync();
                 throw new InteractionException(command, Context, "User does not have permission to perform the command.");
             }

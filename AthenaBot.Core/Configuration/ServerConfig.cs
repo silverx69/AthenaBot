@@ -1,24 +1,22 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace AthenaBot.Configuration
 {
     public class ServerConfig : ModelBase
     {
-        [JsonPropertyName("id")]
         public ulong Id { get; set; }
 
-        [JsonPropertyName("comment")]
         public string Comment { get; set; }
 
-        [JsonPropertyName("commands")]
         public ModelList<CommandConfig> Commands { get; set; }
 
         [JsonExtensionData]
-        public Dictionary<string, object> Extended { get; set; }
+        public Dictionary<string, JsonElement> Extended { get; set; }
 
         public ServerConfig() {
             Commands = new ModelList<CommandConfig>();
-            Extended = new Dictionary<string, object>();
+            Extended = new Dictionary<string, JsonElement>();
         }
 
         public ServerConfig(ulong id)

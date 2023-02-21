@@ -1,4 +1,5 @@
 ﻿using AthenaBot;
+using Discord;
 using System.Text.Json.Serialization;
 
 namespace TokenInfoPlugin.Configuration
@@ -8,16 +9,14 @@ namespace TokenInfoPlugin.Configuration
         [JsonPropertyName("coingecko_id")]
         public string CoinGeckoId { get; set; }
 
-        [JsonPropertyName("decimals")]
         public int Decimals { get; set; }
 
-        [JsonPropertyName("enabled")]
         public bool Enabled { get; set; }
 
-        [JsonPropertyName("default")]
         public bool Default { get; set; }
 
-        [JsonPropertyName("aliases")]
+        public Color Color { get; set; }
+
         public List<string> Aliases { get; set; }
 
         [JsonPropertyName("dev_wallets")]
@@ -26,11 +25,15 @@ namespace TokenInfoPlugin.Configuration
         [JsonPropertyName("burn_wallets")]
         public List<string> BurnWallets { get; set; }
 
+        public TrendingConfig Trending { get; set; }
+
         public TokenConfig() {
             Enabled = true;
+            Color = Color.Default;
             Aliases = new List<string>();
             DevWallets = new List<string>();
             BurnWallets = new List<string>();
+            Trending = new TrendingConfig();
         }
 
         public TokenConfig(string coinGeckoId)

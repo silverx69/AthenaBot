@@ -4,6 +4,7 @@ using Discord.Interactions;
 
 namespace TokenInfoPlugin.Commands
 {
+    [RequireContext(ContextType.Guild)]
     public class SlashCommandModule : DiscordBotInteractionModule
     {
         [SlashCommand("price", "Displays a currency's current price.")]

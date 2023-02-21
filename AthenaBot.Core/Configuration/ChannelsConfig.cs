@@ -1,29 +1,28 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace AthenaBot.Configuration
 {
     public class ChannelsConfig : ModelBase
     {
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public ulong Id { get; set; }
 
-        [JsonPropertyName("enabled")]
         public bool Enabled { get; set; }
 
         [JsonExtensionData]
-        public Dictionary<string, object> Extended { get; set; }
+        public Dictionary<string, JsonElement> Extended { get; set; }
 
         public ChannelsConfig() {
             Enabled = true;
-            Extended = new Dictionary<string, object>();
+            Extended = new Dictionary<string, JsonElement>();
         }
 
-        public ChannelsConfig(string name, bool enabled) {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentNullException(nameof(name));
-            Name = name;
+        public ChannelsConfig(ulong id, bool enabled) {
+            if (id == 0)
+                throw new ArgumentException("Invalid channel identifier.", nameof(id));
+            Id = id;
             Enabled = enabled;
-            Extended = new Dictionary<string, object>();
+            Extended = new Dictionary<string, JsonElement>();
         }
     }
 }

@@ -5,8 +5,8 @@ using System.Net;
 
 namespace OpenSeaPlugin.Commands
 {
-    [Group("os")]
-    [Summary("OpenSea Plugin Command Group")]
+    [RequireContext(ContextType.Guild)]
+    [Group("os"), Summary("OpenSea Plugin Command Group")]
     public class TextCommandModule : DiscordBotCommandModule
     {
         [Command("stats")]

@@ -21,7 +21,7 @@
             GC.SuppressFinalize(this);
         }
 
-        public bool LoadPlugin(string name) {
+        public bool IsPluginLoaded(string name) {
             string lowname = name.ToLower();
 
             if (lowname.EndsWith(".dll")) {
@@ -34,38 +34,57 @@
                 if (index > -1) return true;
             }
 
-            try {
-                var context = GetPluginContext<TPlugin>(name);
-                if (context == null) return false;
+            return false;
+        }
 
-                context.Assembly = context.LoadFromAssemblyPath(context.FilePath);
-
-                Type impl = null;
-                Type pluginType = typeof(TPlugin);
-
-                foreach (var type in context.Assembly.GetExportedTypes()) {
-                    if (pluginType.IsAssignableFrom(type))
-                        impl = type;
-                }
-
-                if (impl == null)
-                    throw new PluginLoadException("Assembly does not contain a valid IPlugin implementation.");
-
-                context.Plugin = (TPlugin)Activator.CreateInstance(impl);
-
-                lock (SyncRoot) InnerList.Add(context);
-
-                OnPluginLoaded(context);
-
+        public bool LoadPlugin(string name) {
+            if (IsPluginLoaded(name))
                 return true;
-            }
-            catch (PluginLoadException plex) {
-                OnError(GetType().Name, nameof(LoadPlugin), plex);
+            try {
+                LoadPluginInternal(name);
             }
             catch (Exception ex) {
-                OnError(GetType().Name, nameof(LoadPlugin), ex);
+                Logging.Error(string.Format("{0}.{1}", GetType().Name, nameof(LoadPlugin)), ex);
             }
             return false;
+        }
+
+        public async Task<bool> LoadPluginAsync(string name) {
+            if (IsPluginLoaded(name))
+                return true;
+            try {
+                return await Task.Run(() => LoadPluginInternal(name));
+            }
+            catch (Exception ex) {
+                await Logging.ErrorAsync(string.Format("{0}.{1}", GetType().Name, nameof(LoadPlugin)), ex);
+            }
+            return false;
+        }
+
+        private bool LoadPluginInternal(string name) {
+            var context = GetPluginContext<TPlugin>(name);
+            if (context == null) return false;
+
+            context.Assembly = context.LoadFromAssemblyPath(context.FilePath);
+
+            Type impl = null;
+            Type pluginType = typeof(TPlugin);
+
+            foreach (var type in context.Assembly.GetExportedTypes()) {
+                if (pluginType.IsAssignableFrom(type))
+                    impl = type;
+            }
+
+            if (impl == null)
+                throw new PluginLoadException("Assembly does not contain a valid IPlugin implementation.");
+
+            context.Plugin = (TPlugin)Activator.CreateInstance(impl);
+
+            lock (SyncRoot) InnerList.Add(context);
+
+            OnPluginLoaded(context);
+
+            return true;
         }
 
         public void KillPlugin(string name) {
@@ -77,6 +96,10 @@
 
                 KillPlugin(this[index]);
             }
+        }
+
+        public Task KillPluginAsync(string name) {
+            return Task.Run(() => KillPlugin(name));
         }
 
         protected void KillPlugin(PluginContext<TPlugin> context) {
@@ -100,30 +123,12 @@
         protected abstract void OnPluginKilled(PluginContext<TPlugin> context);
 
 
-        protected virtual void OnError(PluginContext<TPlugin> context, string method, Exception ex) {
-            OnError(context.Name, method, ex);
-        }
-
-        protected virtual void OnError(string name, string method, Exception ex) {
-            var error = new PluginErrorInfo(name, method, ex);
-
-            foreach (var context in this) {
-                try {
-                    context.Plugin.OnError(error);
-                }
-                catch {
-                    /* do not route back into the plugins.. possible stack overflow */
-                }
-            }
-        }
-
-
         protected void RaisePluginLoaded(PluginContext<TPlugin> context) {
-            Loaded?.Invoke(this, context);
+            Loaded?.Invoke(context);
         }
 
         protected void RaisePluginKilled(PluginContext<TPlugin> context) {
-            if (!unloading) Killed?.Invoke(this, context);
+            if (!unloading) Killed?.Invoke(context);
         }
 
         protected virtual PluginContext<T> GetPluginContext<T>(string dllname) where T : IPlugin {

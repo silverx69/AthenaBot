@@ -31,7 +31,7 @@ namespace AthenaBot
 
         bool IList.IsFixedSize { get => false; }
 
-        bool ICollection.IsSynchronized { get => false; }
+        bool ICollection.IsSynchronized { get => true; }
 
 
         object IList.this[int index] {

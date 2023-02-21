@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AthenaBot
 {
-    public static partial class StringExtensions
+    public static class StringExtensions
     {
         public static string Repeat(this string @string, int count) {
             count = count <= 0 ? 1 : count;//if 0 return input

@@ -9,6 +9,9 @@ namespace AthenaBot.Plugins
 {
     public interface IDiscordBot : INotifyPropertyChanged
     {
+        bool IsReady { get; }
+        bool IsConnected { get; }
+
         Directories Directories { get; }
         DiscordBotConfig Config { get; }
         DiscordSocketClient Client { get; }

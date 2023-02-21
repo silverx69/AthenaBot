@@ -5,6 +5,7 @@ using System.Net;
 
 namespace OpenSeaPlugin.Commands
 {
+    [RequireContext(ContextType.Guild)]
     [Group("os", "OpenSea Plugin Command Group")]
     public class SlashCommandModule : DiscordBotInteractionModule
     {

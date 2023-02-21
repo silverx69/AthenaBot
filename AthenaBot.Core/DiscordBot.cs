@@ -1,5 +1,6 @@
 ﻿using AthenaBot.Commands;
 using AthenaBot.Configuration;
+using AthenaBot.Extensions;
 using AthenaBot.Plugins;
 using Discord;
 using Discord.Commands;
@@ -10,6 +11,9 @@ namespace AthenaBot
 {
     public class DiscordBot : ModelBase, IDiscordBot, IDisposable
     {
+        bool isready = false;
+        bool isconnected = false;
+
         Directories directories = null;
         DiscordBotConfig config = null;
         DiscordSocketClient client = null;
@@ -17,6 +21,16 @@ namespace AthenaBot
 
         CommandHandler commands;
         readonly string configFile = string.Empty;
+
+        public bool IsReady {
+            get { return IsConnected && isready; }
+            private set { OnPropertyChanged(() => isready, value); }
+        }
+
+        public bool IsConnected {
+            get { return Client != null && isconnected; }
+            private set { OnPropertyChanged(() => isconnected, value); }
+        }
 
         public Directories Directories {
             get { return directories; }
@@ -50,6 +64,10 @@ namespace AthenaBot
             Plugins = new DiscordBotPluginHost(this);
         }
 
+        public void SaveConfig() {
+            Persistence.SaveModel(Config, configFile);
+        }
+
         public ServerConfig FindConfig(ulong guildId) {
             return Config.Servers.Find(s => s.Id == guildId);
         }
@@ -62,6 +80,8 @@ namespace AthenaBot
                 GatewayIntents = gatewayIntents
             });
 
+            Client.Connected += Connected;
+            Client.Disconnected += Disconnected;
             Client.LoggedIn += LoggedIn;
             Client.Ready += ClientReady;
             Client.JoinedGuild += JoinedGuild;
@@ -83,6 +103,9 @@ namespace AthenaBot
             await Client?.StopAsync();
             await Persistence.SaveModelAsync(Config, configFile);
 
+            IsConnected = false;
+            IsReady = false;
+
             if (Plugins != null) {
                 Plugins.Dispose();
                 Plugins = null;
@@ -95,6 +118,8 @@ namespace AthenaBot
             }
 
             if (Client != null) {
+                Client.Connected -= Connected;
+                Client.Disconnected -= Disconnected;
                 Client.LoggedIn -= LoggedIn;
                 Client.Ready -= ClientReady;
                 Client.JoinedGuild -= JoinedGuild;
@@ -109,14 +134,25 @@ namespace AthenaBot
             GC.SuppressFinalize(this);
         }
 
+        private Task Connected() {
+            IsConnected = true;
+            return Task.CompletedTask;
+        }
+
         private Task LoggedIn() {
             return Client.StartAsync();
         }
 
         private async Task ClientReady() {
+            IsReady = true;
             if (Config.Activity != null)
                 await Client.SetActivityAsync(Config.Activity);
             await commands.InstallInteractionsAsync();
+        }
+
+        private Task Disconnected(Exception ex) {
+            IsConnected = false;
+            return Task.CompletedTask;
         }
 
         private async Task JoinedGuild(SocketGuild guild) {
@@ -193,16 +229,16 @@ namespace AthenaBot
 
         private static bool ValidateCommandRoles(SocketGuild guild, SocketGuildChannel channel, SocketGuildUser user, CommandConfig ccmd) {
 
-            ChannelsConfig chanConfig = ccmd.Channels.Find(s => s.Name == channel.Name);
+            ChannelsConfig chanConfig = ccmd.Channels.Find(s => s.Id == channel.Id);
             if (chanConfig == null) {
-                chanConfig = new ChannelsConfig(channel.Name, ccmd.Enabled);
+                chanConfig = new ChannelsConfig(channel.Id, ccmd.Enabled);
                 ccmd.Channels.Add(chanConfig);
             }
 
             if (!chanConfig.Enabled)
                 return false;
 
-            if (ccmd.AdminOnly && !user.GuildPermissions.Administrator)
+            if (ccmd.AdminOnly && (user.IsOwnerOf(guild) || !user.GuildPermissions.Administrator))
                 return false;
 
             if (ccmd.Roles.Count > 0 &&

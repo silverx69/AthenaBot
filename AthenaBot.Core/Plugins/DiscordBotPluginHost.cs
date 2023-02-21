@@ -17,11 +17,6 @@
             Bot = bot;
         }
 
-        protected override void OnError(string name, string method, Exception ex) {
-            Logging.Error(string.Format("{0}::{1}", name, method), ex);
-            base.OnError(name, method, ex);
-        }
-
         protected override void OnPluginLoaded(PluginContext<DiscordBotPlugin> plugin) {
             try {
                 plugin.Plugin.Bot = Bot;
@@ -29,13 +24,13 @@
                 plugin.Plugin.OnPluginLoaded();
             }
             catch (Exception ex) {
-                OnError(plugin, nameof(OnPluginLoaded), ex);
+                Logging.Error(string.Format("{0}.{1}", GetType().Name, nameof(OnPluginLoaded)), ex);
             }
             try {
                 RaisePluginLoaded(plugin);
             }
             catch (Exception ex) {
-                OnError(plugin, "Loaded::EventHandler", ex);
+                Logging.Error("Loaded::EventHandler", ex);
             }
         }
 
@@ -44,14 +39,14 @@
                 plugin.Plugin.OnPluginKilled();
             }
             catch (Exception ex) {
-                OnError(plugin, nameof(OnPluginKilled), ex);
+                Logging.Error(string.Format("{0}.{1}", GetType().Name, nameof(OnPluginKilled)), ex);
             }
             if (unloading) return;
             try {
                 RaisePluginKilled(plugin);
             }
             catch (Exception ex) {
-                OnError(plugin, "Killed::EventHandler", ex);
+                Logging.Error("Killed::EventHandler", ex);
             }
         }
     }

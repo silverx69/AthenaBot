@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+	<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	<Title>TranslatePlugin</Title>
+	<Authors>silverx69</Authors>
+	<Company>Cloud3d Games</Company>
+	<Copyright>silverx69 © 2023</Copyright>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<RepositoryType>git</RepositoryType>
+	<RepositoryUrl>https://github.com/silverx69/AthenaBot.git</RepositoryUrl>
+	<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+	<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>	  <Title>TokenInfoPlugin</Title>
+	<Authors>silverx69</Authors>
+	<Company>Cloud3d Games</Company>
+	<Copyright>silverx69 © 2023</Copyright>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<RepositoryType>git</RepositoryType>
+	<RepositoryUrl>https://github.com/silverx69/AthenaBot.git</RepositoryUrl>
+	<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Cloud.Translation.V2" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AthenaBot.Core\AthenaBot.Core.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="mkdir &quot;%25APPDATA%25\AthenaBot\Plugins\$(TargetName)\&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName)*&quot; &quot;%25APPDATA%25\AthenaBot\Plugins\$(TargetName)\*&quot;" />
+  </Target>
+
+</Project>

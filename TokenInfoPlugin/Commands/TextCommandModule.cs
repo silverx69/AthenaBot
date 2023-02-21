@@ -4,11 +4,12 @@ using Discord.Commands;
 
 namespace TokenInfoPlugin.Commands
 {
+    [RequireContext(ContextType.Guild)]
     public class TextCommandModule : DiscordBotCommandModule
     {
         [Command("price")]
         [Summary("Displays a currency's current price.")]
-        public async Task Price([Summary("The ID of the token to display.")] string id = null) {
+        public async Task Price([Summary("The ID of the token to display."), Remainder] string id = null) {
             using var typing = Context.Channel.EnterTypingState();
             try {
                 await ReplyAsync(embed: await TokenInfoCommands.GetPriceAsync(Context.Guild.Id, id));
@@ -24,7 +25,7 @@ namespace TokenInfoPlugin.Commands
 
         [Command("token")]
         [Summary("Shows detailed information about a currency.")]
-        public async Task Token([Summary("The ID of the token to display.")] string id = null) {
+        public async Task Token([Summary("The ID of the token to display."), Remainder] string id = null) {
             using var typing = Context.Channel.EnterTypingState();
             try {
                 await ReplyAsync(embed: await TokenInfoCommands.GetInfoAsync(Context.Guild.Id, id));

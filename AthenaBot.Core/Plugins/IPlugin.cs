@@ -15,9 +15,5 @@
         /// Called when the plugin is killed
         /// </summary>
         void OnPluginKilled();
-        /// <summary>
-        /// Occurs when an unhandled exception occurs in any plugin (all plugins receive notification [for debugging?])
-        /// </summary>
-        void OnError(IErrorInfo error);
     }
 }

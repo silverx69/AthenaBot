@@ -1,30 +1,23 @@
-﻿using System.Text.Json.Serialization;
-
-namespace AthenaBot
+﻿namespace AthenaBot
 {
     public class Directories : ModelBase
     {
         string appData;
 
-        [JsonPropertyName("data")]
         public string AppData {
             get { return appData; }
             set {
                 if (appData != value) {
                     appData = value;
-                    RaisePropertyChanged(nameof(AppData));
-                    RaisePropertyChanged(nameof(Logs));
-                    RaisePropertyChanged(nameof(Plugins));
+                    AppDataChanged();
                 }
             }
         }
 
-        [JsonPropertyName("logs")]
         public string Logs {
             get { return Path.Combine(AppData, "Logs"); }
         }
 
-        [JsonPropertyName("plugins")]
         public string Plugins {
             get { return Path.Combine(AppData, "Plugins"); }
         }
@@ -33,12 +26,17 @@ namespace AthenaBot
             get { return AppDomain.CurrentDomain.BaseDirectory; }
         }
 
-        public Directories()
-            : this(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AthenaBot")) {
+        public Directories(string appDataDirectory = null) {
+            AppData = !string.IsNullOrEmpty(appDataDirectory) ?
+                appDataDirectory :
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AthenaBot");
         }
 
-        public Directories(string appDataDirectory) {
-            AppData = appDataDirectory;
+        private void AppDataChanged() {
+            EnsureExists();
+            RaisePropertyChanged(nameof(AppData));
+            RaisePropertyChanged(nameof(Logs));
+            RaisePropertyChanged(nameof(Plugins));
         }
 
         public void EnsureExists() {
