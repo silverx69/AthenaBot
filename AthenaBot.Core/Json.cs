@@ -27,26 +27,22 @@ namespace AthenaBot
         }
 
         public static string Serialize(object obj) {
-            if (obj == null)
-                throw new ArgumentNullException(nameof(obj));
+            ArgumentNullException.ThrowIfNull(obj, nameof(obj));
             return JsonSerializer.Serialize(obj, obj.GetType(), Options);
         }
 
         public static string Serialize<T>(T obj) {
-            if (obj == null)
-                throw new ArgumentNullException(nameof(obj));
+            ArgumentNullException.ThrowIfNull(obj, nameof(obj));
             return JsonSerializer.Serialize(obj, Options);
         }
 
         public static Task<string> SerializeAsync(object obj) {
-            if (obj == null)
-                throw new ArgumentNullException(nameof(obj));
+            ArgumentNullException.ThrowIfNull(obj, nameof(obj));
             return SerializeAsync<object>(obj);
         }
 
         public static async Task<string> SerializeAsync<T>(T obj) {
-            if (obj == null)
-                throw new ArgumentNullException(nameof(obj));
+            ArgumentNullException.ThrowIfNull(obj, nameof(obj));
 
             using var stream = new MemoryStream();
             using var reader = new StreamReader(stream, Encoding.UTF8);

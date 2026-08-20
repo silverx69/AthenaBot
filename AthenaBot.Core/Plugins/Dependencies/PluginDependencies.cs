@@ -10,8 +10,8 @@
 
         public PluginDependencies() {
             RuntimeTarget = new RuntimeTarget();
-            Targets = new Dictionary<string, Dictionary<string, Target>>();
-            Libraries = new Dictionary<string, Library>();
+            Targets = [];
+            Libraries = [];
         }
     }
 }

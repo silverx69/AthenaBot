@@ -1,6 +1,6 @@
 ﻿using AthenaBot.Commands;
 using AthenaBot.Configuration;
-using AthenaBot.Extensions;
+using AthenaBot.Interactions;
 using AthenaBot.Plugins;
 using Discord;
 using Discord.Commands;
@@ -106,18 +106,16 @@ namespace AthenaBot
             IsConnected = false;
             IsReady = false;
 
-            if (Plugins != null) {
-                Plugins.Dispose();
-                Plugins = null;
-            }
+            Plugins?.Dispose();
+            Plugins = null;
 
-            if (commands != null) {
+            if (commands is not null) {
                 commands.CommandService.Log -= LogHandler;
                 commands.InteractionService.Log -= LogHandler;
                 commands = null;
             }
 
-            if (Client != null) {
+            if (Client is not null) {
                 Client.Connected -= Connected;
                 Client.Disconnected -= Disconnected;
                 Client.LoggedIn -= LoggedIn;
@@ -145,7 +143,7 @@ namespace AthenaBot
 
         private async Task ClientReady() {
             IsReady = true;
-            if (Config.Activity != null)
+            if (Config.Activity is not null)
                 await Client.SetActivityAsync(Config.Activity);
             await commands.InstallInteractionsAsync();
         }
@@ -156,13 +154,15 @@ namespace AthenaBot
         }
 
         private async Task JoinedGuild(SocketGuild guild) {
-            Config.Servers.Add(new ServerConfig(guild.Id));
-            await Persistence.SaveModelAsync(Config, configFile);
+            if (!Config.Servers.Contains(s => s.Id == guild.Id)) {
+                Config.Servers.Add(new ServerConfig(guild.Id));
+                await Persistence.SaveModelAsync(Config, configFile);
+            }
             await commands.InstallInteractionsAsync(guild.Id);
         }
 
         private async Task LogHandler(LogMessage m) {
-            if (m.Exception == null)
+            if (m.Exception is null)
                 await Logging.WriteLineAsync(m.Severity.ToLogLevel(), "Gateway", m.Message);
             else if (m.Exception is GatewayReconnectException gex)
                 await Logging.WriteLineAsync(m.Severity.ToLogLevel(), "Gateway", gex.Message);
@@ -186,7 +186,9 @@ namespace AthenaBot
                 await Logging.ErrorAsync(m.Severity.ToLogLevel(), "Gateway", m.Exception);
         }
 
-        public bool ValidateCommandRoles(DiscordBotCommandContext context, CommandInfo cmd) {
+        public bool ValidateCommandRoles(AthenaCommandContext context, CommandInfo cmd) {
+            if (context.Guild == null)
+                return true;
             var user = context.User as SocketGuildUser;
             var channel = context.Channel as SocketGuildChannel;
 
@@ -206,7 +208,9 @@ namespace AthenaBot
             return ValidateCommandRoles(context.Guild, channel, user, ccmd);
         }
 
-        public bool ValidateCommandRoles(DiscordBotInteractionContext context, ICommandInfo cmd) {
+        public bool ValidateCommandRoles(AthenaInteractionContext context, ICommandInfo cmd) {
+            if (context.Guild == null)
+                return true;
             var user = context.User as SocketGuildUser;
             var channel = context.Channel as SocketGuildChannel;
 
@@ -230,7 +234,7 @@ namespace AthenaBot
         private static bool ValidateCommandRoles(SocketGuild guild, SocketGuildChannel channel, SocketGuildUser user, CommandConfig ccmd) {
 
             ChannelsConfig chanConfig = ccmd.Channels.Find(s => s.Id == channel.Id);
-            if (chanConfig == null) {
+            if (chanConfig is null) {
                 chanConfig = new ChannelsConfig(channel.Id, ccmd.Enabled);
                 ccmd.Channels.Add(chanConfig);
             }
@@ -238,7 +242,7 @@ namespace AthenaBot
             if (!chanConfig.Enabled)
                 return false;
 
-            if (ccmd.AdminOnly && (user.IsOwnerOf(guild) || !user.GuildPermissions.Administrator))
+            if (ccmd.AdminOnly && (!user.IsOwnerOf(guild) || !user.GuildPermissions.Administrator))
                 return false;
 
             if (ccmd.Roles.Count > 0 &&

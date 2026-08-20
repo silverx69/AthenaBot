@@ -6,6 +6,6 @@ namespace OpenSeaPlugin.Configuration
     {
         public string OpenSeaApiKey { get; set; }
 
-        public List<ServerConfig> Servers { get; set; } = new List<ServerConfig>();
+        public List<ServerConfig> Servers { get; set; } = [];
     }
 }

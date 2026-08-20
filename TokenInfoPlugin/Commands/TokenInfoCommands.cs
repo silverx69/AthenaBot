@@ -12,23 +12,6 @@ namespace TokenInfoPlugin.Commands
             var eb = new EmbedBuilder() {
                 Title = string.Format("#{0} | {1}", recent.Rank, recent.Name),
                 Url = recent.Homepage,
-                ThumbnailUrl = recent.Thumbnail,
-                Description = string.Format(
-                    "{0} is currently at ${1} USD.",
-                    recent.Name,
-                    recent.Price)
-            };
-
-            GetEmbedFooter(eb, recent);
-            return eb.Build();
-        }
-
-        public static async Task<Embed> GetInfoAsync(ulong guildId, string id) {
-            var recent = await TokenInfoPlugin.Self.GetTokenInfo(id, guildId);
-
-            var eb = new EmbedBuilder() {
-                Title = string.Format("#{0} | {1}", recent.Rank, recent.Name),
-                Url = recent.Homepage,
                 ThumbnailUrl = recent.Thumbnail
             };
 
@@ -69,16 +52,10 @@ namespace TokenInfoPlugin.Commands
             sb.AppendLine("__Total:__");
             sb.Append(recent.TotalSupply.ToString("N"));
             //add supply field
-            eb.AddField("**Supply**", sb.ToString());
-
-            GetEmbedFooter(eb, recent);
-            return eb.Build();
-        }
-
-        private static void GetEmbedFooter(EmbedBuilder eb, TokenInfo recent) {
-            eb.WithColor(recent.Color);
-            eb.WithFooter("Last Updated");
-            eb.WithTimestamp(recent.LastUpdate.ToUtcOffset());
+            return eb.AddField("**Supply**", sb.ToString())
+                .WithColor(recent.Color)
+                .WithLastUpdated(recent.LastUpdate)
+                .Build();
         }
 
         private static string GetPercentageFormat(string range, double value) {

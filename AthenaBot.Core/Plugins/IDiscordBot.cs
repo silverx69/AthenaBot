@@ -1,5 +1,6 @@
 ﻿using AthenaBot.Commands;
 using AthenaBot.Configuration;
+using AthenaBot.Interactions;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -19,7 +20,7 @@ namespace AthenaBot.Plugins
 
         ServerConfig FindConfig(ulong guildId);
 
-        bool ValidateCommandRoles(DiscordBotCommandContext context, CommandInfo cmd);
-        bool ValidateCommandRoles(DiscordBotInteractionContext context, ICommandInfo cmd);
+        bool ValidateCommandRoles(AthenaCommandContext context, CommandInfo cmd);
+        bool ValidateCommandRoles(AthenaInteractionContext context, ICommandInfo cmd);
     }
 }

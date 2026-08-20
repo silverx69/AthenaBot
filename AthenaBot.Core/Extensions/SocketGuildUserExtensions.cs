@@ -1,6 +1,6 @@
 ﻿using Discord.WebSocket;
 
-namespace AthenaBot.Extensions
+namespace AthenaBot
 {
     public static class SocketGuildUserExtensions
     {

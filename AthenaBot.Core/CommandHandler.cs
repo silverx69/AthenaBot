@@ -1,18 +1,20 @@
-﻿using AthenaBot.Plugins;
+﻿using AthenaBot.Commands;
+using AthenaBot.Interactions;
+using AthenaBot.Plugins;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using System.Reflection;
 
-namespace AthenaBot.Commands
+namespace AthenaBot
 {
     public class CommandHandler
     {
         readonly DiscordBot bot;
         readonly List<PluginCommands> pluginCommands;
 
-        static readonly Type commandModuleType = typeof(DiscordBotCommandModule);
-        static readonly Type interactionModuleType = typeof(DiscordBotInteractionModule);
+        static readonly Type commandModuleType = typeof(AthenaCommandModule);
+        static readonly Type interactionModuleType = typeof(AthenaInteractionModule);
 
         public CommandService CommandService { get; private set; }
 
@@ -85,9 +87,9 @@ namespace AthenaBot.Commands
             bot.Client.UserCommandExecuted += HandleInteractionAsync;
 
             //load AthenaBot's built-in commands
-            var asm = Assembly.GetExecutingAssembly();
-            await CommandService.AddModulesAsync(asm, null);
-            await InteractionService.AddModulesAsync(asm, null);
+            //var asm = Assembly.GetExecutingAssembly();
+            //await CommandService.AddModulesAsync(asm, null);
+            //await InteractionService.AddModulesAsync(asm, null);
 
             //install commands defined in loaded plugin assemblies
             foreach (var ctx in bot.Plugins)
@@ -125,7 +127,7 @@ namespace AthenaBot.Commands
 
         private async Task HandleInteractionAsync(SocketInteraction cmd) {
             if (cmd.User.IsBot) return;
-            await InteractionService.ExecuteCommandAsync(new DiscordBotInteractionContext(bot, cmd), null);
+            await InteractionService.ExecuteCommandAsync(new AthenaInteractionContext(bot, cmd), null);
         }
 
         private async Task HandleCommandAsync(SocketMessage smsg) {
@@ -137,7 +139,7 @@ namespace AthenaBot.Commands
             if (!message.Content.StartsWithAny('!', '.', '$', '#') &&
                 !message.HasMentionPrefix(bot.Client.CurrentUser, ref argPos)) return;
 
-            await CommandService.ExecuteAsync(new DiscordBotCommandContext(bot, message), argPos, null);
+            await CommandService.ExecuteAsync(new AthenaCommandContext(bot, message), argPos, null);
         }
     }
 }

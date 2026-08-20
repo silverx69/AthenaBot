@@ -49,7 +49,7 @@ namespace TokenInfoPlugin
             if (DateTime.MinValue.Equals(Config.LastTrending))
                 Config.LastTrending = DateTime.UtcNow.Subtract(TimeSpan.FromHours(4));
 
-            recentInfos = new Dictionary<string, TokenInfo>();
+            recentInfos = [];
             updateTimer = new Timer(
                 OnTimerElapsed,
                 null,
@@ -126,21 +126,21 @@ namespace TokenInfoPlugin
             Config.LastTrending = now;
 
             var trending = await GetTrendingSearches();
-            if (trending == null) return;
+            if (trending is null) return;
 
             foreach (var server in Config.Servers) {
                 var guild = Bot.Client.GetGuild(server.Id);
-                if (guild == null) continue;
+                if (guild is null) continue;
                 foreach (var token in server.Tokens) {
                     if (!token.Trending.Enabled)
                         continue;
                     //is trending now?
                     var trend = trending.Find(s => s == token.CoinGeckoId);
-                    if (trend == null) continue;
+                    if (trend is null) continue;
 
                     //was already trending?
                     var prevTrend = Config.RecentTrending.Find(s => s == token.CoinGeckoId);
-                    if (prevTrend != null) continue;
+                    if (prevTrend is not null) continue;
 
                     var embed = await GetTrendingEmbed(token, guild.Id);
 
@@ -175,7 +175,7 @@ namespace TokenInfoPlugin
 
             if (guildId != 0) {
                 var config = Config.Servers.Find(s => s.Id == guildId);
-                if (config == null) {
+                if (config is null) {
                     config = new ServerConfig();
                     Config.Servers.Add(config);
                 }
@@ -183,12 +183,11 @@ namespace TokenInfoPlugin
                 if (config.AnyToken && !string.IsNullOrWhiteSpace(id))
                     tconfig = config.Tokens.Find(s => s.CoinGeckoId == id || s.Aliases.Contains(id));
                 else {
-                    tconfig = config.Tokens.Find(s => s.Default);
-                    if (tconfig == null)
+                    tconfig = config.Tokens.Find(s => s.Default) ?? 
                         throw new TokenInfoException("No default token has been configured.");
                 }
 
-                if (tconfig == null) {
+                if (tconfig is null) {
                     tconfig = new TokenConfig(id);
                     config.Tokens.Add(tconfig);
                 }
@@ -204,8 +203,8 @@ namespace TokenInfoPlugin
         internal async Task<TokenInfo> GetTokenInfo(TokenConfig tconfig, double delay = 5d) {
             DateTime now = DateTime.UtcNow;
 
-            if (!recentInfos.TryGetValue(tconfig.CoinGeckoId, out TokenInfo recent))
-                recent = new TokenInfo(now);
+            recentInfos.TryGetValue(tconfig.CoinGeckoId, out TokenInfo recent);
+            recent ??= new TokenInfo(now);
 
             if (now.Subtract(recent.LastUpdate).TotalMinutes < delay)
                 return recent;
@@ -244,8 +243,7 @@ namespace TokenInfoPlugin
                 recent.Price = coin.MarketData.CurrentPrice["usd"] ?? 0M;
                 recent.Volume24h = coin.MarketData.TotalVolume["usd"] ?? 0M;
                 recent.TotalSupply = coin.MarketData.TotalSupply ?? 0M;
-                if (decimal.TryParse(coin.MarketData.CirculatingSupply ?? "0", out decimal supply))
-                    recent.CirculatingSupply = supply;
+                recent.CirculatingSupply = coin.MarketData.CirculatingSupply.Value;
                 recent.MarketCap = coin.MarketData.MarketCap["usd"] ?? 0M;
                 recent.PriceChange1h = coin.MarketData.PriceChangePercentage1HInCurrency["usd"];
                 recent.PriceChange24h = coin.MarketData.PriceChangePercentage24HInCurrency["usd"];
@@ -281,10 +279,9 @@ namespace TokenInfoPlugin
             using var client = new HttpClient();
             var search = new SearchClient(client, jsonSettings);
 
-            return (await search.GetSearchTrending())
+            return [.. (await search.GetSearchTrending())
                 .TrendingItems
-                .Select(s => s.TrendingItem.Id)
-                .ToList();
+                .Select(s => s.TrendingItem.Id)];
         }
 
         private static async Task<decimal> GetSumFromWallets(BscScanTokensService service, string contract, int decimals, List<string> wallets) {

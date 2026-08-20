@@ -1,16 +1,16 @@
 ﻿using Discord.Interactions;
 using Discord.WebSocket;
 
-namespace AthenaBot.Commands
+namespace AthenaBot.Interactions
 {
-    public sealed class DiscordBotInteractionContext : SocketInteractionContext
+    public sealed class AthenaInteractionContext : SocketInteractionContext
     {
         public DiscordBot Bot {
             get;
             private set;
         }
 
-        public DiscordBotInteractionContext(DiscordBot bot, SocketInteraction interaction)
+        public AthenaInteractionContext(DiscordBot bot, SocketInteraction interaction)
             : base(bot.Client, interaction) {
             Bot = bot;
         }

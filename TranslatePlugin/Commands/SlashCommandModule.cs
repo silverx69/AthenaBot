@@ -1,10 +1,10 @@
-﻿using AthenaBot.Commands;
+﻿using AthenaBot.Interactions;
 using Discord.Interactions;
 
 namespace TranslatePlugin.Commands
 {
     [RequireContext(ContextType.Guild)]
-    public class SlashCommandModule : DiscordBotSilentInteractionModule
+    public class SlashCommandModule : AthenaInteractionModule
     {
         [SlashCommand("translate", "Translates a specified body of text into another language.")]
         public async Task Translate(
@@ -14,6 +14,8 @@ namespace TranslatePlugin.Commands
             string to = null,
             [Summary(description: "The language to translate from.")]
             string from = null) {
+
+            await DeferAsync(ephemeral: true);
 
             var result = await TranslateCommands.TranslateAsync(Context.Guild.Id, text, to, from);
             if (result == null)

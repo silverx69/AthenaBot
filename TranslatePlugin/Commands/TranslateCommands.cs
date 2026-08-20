@@ -31,16 +31,14 @@ namespace TranslatePlugin.Commands
 
             var result = await TranslatePlugin.Self.Client.TranslateTextAsync(text, to, from);
 
-            var eb = new EmbedBuilder();
-
-            eb.AddField(
-                string.Format("Source: {0}", FromLanguageCode(result.DetectedSourceLanguage)),
-                text);
-            eb.AddField(
-                string.Format("Result: {0}", FromLanguageCode(result.TargetLanguage)),
-                result.TranslatedText);
-
-            return eb.Build();
+            return new EmbedBuilder()
+                .AddField(
+                    string.Format("Source: {0}", FromLanguageCode(result.DetectedSourceLanguage)),
+                    text)
+                .AddField(
+                    string.Format("Result: {0}", FromLanguageCode(result.TargetLanguage)),
+                    result.TranslatedText)
+                .Build();
         }
 
         private static async Task<bool> LoadLanguageListAsync() {

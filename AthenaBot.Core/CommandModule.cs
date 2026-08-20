@@ -1,9 +1,10 @@
-﻿using Discord;
+﻿using AthenaBot.Interactions;
+using Discord;
 using Discord.Interactions;
 
-namespace AthenaBot.Commands
+namespace AthenaBot
 {
-    public sealed class CommandModule : DiscordBotInteractionModule
+    public sealed class CommandModule : AthenaInteractionModule
     {
         [SlashCommand("listplugins", "Lists all loaded AthenaBot plugins.")]
         public async Task ListPlugins() {

@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 
-namespace AthenaBot.Commands
+namespace AthenaBot
 {
     public sealed class InteractionException : Exception
     {
