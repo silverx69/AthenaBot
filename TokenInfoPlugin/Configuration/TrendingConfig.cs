@@ -9,7 +9,7 @@ namespace TokenInfoPlugin.Configuration
         public List<ulong> Channels { get; set; }
 
         public TrendingConfig() {
-            Channels = new List<ulong>();
+            Channels = [];
         }
     }
 }

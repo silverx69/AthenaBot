@@ -26,8 +26,8 @@ namespace AthenaBot
             public List<Discord.Commands.ModuleInfo> CommandModules { get; set; }
             public List<Discord.Interactions.ModuleInfo> InteractionModules { get; set; }
             public PluginCommands() {
-                CommandModules = new List<Discord.Commands.ModuleInfo>();
-                InteractionModules = new List<Discord.Interactions.ModuleInfo>();
+                CommandModules = [];
+                InteractionModules = [];
             }
             public PluginCommands(PluginContext<DiscordBotPlugin> context)
                 : this() {
@@ -38,14 +38,14 @@ namespace AthenaBot
         public CommandHandler(DiscordBot bot) {
             this.bot = bot ?? throw new ArgumentNullException(nameof(bot));
 
-            pluginCommands = new List<PluginCommands>();
+            pluginCommands = [];
 
             bot.Plugins.Loaded += OnPluginLoaded;
             bot.Plugins.Killed += OnPluginKilled;
 
             CommandService = new CommandService(new CommandServiceConfig() {
                 CaseSensitiveCommands = false,
-                IgnoreExtraArgs = true,
+                IgnoreExtraArgs = true
             });
 
             InteractionService = new InteractionService(bot.Client, new InteractionServiceConfig());
@@ -57,7 +57,7 @@ namespace AthenaBot
 
             if (cmds.InteractionModules.Count > 0)
                 foreach (var guild in bot.Client.Guilds)
-                    await InteractionService.AddModulesToGuildAsync(guild.Id, false, cmds.InteractionModules.ToArray());
+                    await InteractionService.AddModulesToGuildAsync(guild.Id, false, [.. cmds.InteractionModules]);
         }
 
         private async void OnPluginKilled(PluginContext<DiscordBotPlugin> ctx) {

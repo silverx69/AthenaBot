@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <RootNamespace>AthenaBot</RootNamespace>
     <Title>AthenaBot.Core</Title>
-	<Authors>silverx69</Authors>
-	<Company>Cloud3d Games</Company>
-	<Copyright>silverx69 © 2023</Copyright>
+	  <Authors>silverx69</Authors>
+	  <Company>Cloud3d Games</Company>
+	  <Copyright>silverx69 © 2023</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/silverx69/AthenaBot.git</RepositoryUrl>

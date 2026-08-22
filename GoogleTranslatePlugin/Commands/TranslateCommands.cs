@@ -12,14 +12,14 @@ namespace TranslatePlugin.Commands
             if (string.IsNullOrWhiteSpace(text))
                 return null;
 
-            if (TranslatePlugin.Self.Client == null)
+            if (GoogleTranslatePlugin.Self.Client == null)
                 throw new InvalidOperationException("Attempted to call Translate without a valid configuration.");
 
             if (await LoadLanguageListAsync())
                 await Task.Delay(1000);
 
             if (string.IsNullOrWhiteSpace(to)) {
-                var server = TranslatePlugin.Config.Servers.Find(s => s.Id == guildId);
+                var server = GoogleTranslatePlugin.Config.Servers.Find(s => s.Id == guildId);
                 to = ToLanguageCode(server?.Language);
             }
             else to = ToLanguageCode(to);
@@ -29,7 +29,7 @@ namespace TranslatePlugin.Commands
 
             else from = null;
 
-            var result = await TranslatePlugin.Self.Client.TranslateTextAsync(text, to, from);
+            var result = await GoogleTranslatePlugin.Self.Client.TranslateTextAsync(text, to, from);
 
             return new EmbedBuilder()
                 .AddField(
@@ -45,7 +45,7 @@ namespace TranslatePlugin.Commands
             if (Languages != null)
                 return false;
 
-            var fileInfo = new FileInfo(Path.Combine(TranslatePlugin.Self.Directory, "langs.json"));
+            var fileInfo = new FileInfo(Path.Combine(GoogleTranslatePlugin.Self.Directory, "langs.json"));
 
             bool cached = false;
             List<string> results = null;
@@ -59,7 +59,7 @@ namespace TranslatePlugin.Commands
             }
 
             if (!cached) {
-                var response = await TranslatePlugin.Self.Client.ListLanguagesAsync();
+                var response = await GoogleTranslatePlugin.Self.Client.ListLanguagesAsync();
                 results = response.Select(s => s.Code).ToList();
                 await Persistence.SaveModelAsync(results, fileInfo.FullName);
             }
@@ -71,7 +71,7 @@ namespace TranslatePlugin.Commands
                     Languages.Add(CultureInfo.GetCultureInfo(language));
                 }
                 catch (CultureNotFoundException cnf) {
-                    await Logging.ErrorAsync("TranslatePlugin", cnf);
+                    await Logging.ErrorAsync("GoogleTranslatePlugin", cnf);
                 }
             }
 

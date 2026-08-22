@@ -4,21 +4,16 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-	  <Title>TokenInfoPlugin</Title>
-	  <Authors>silverx69</Authors>
-	  <Company>Cloud3d Games</Company>
-	  <Copyright>silverx69 © 2023</Copyright>
-	  <PackageReadmeFile>README.md</PackageReadmeFile>
-	  <RepositoryType>git</RepositoryType>
-	  <RepositoryUrl>https://github.com/silverx69/AthenaBot.git</RepositoryUrl>
-	  <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-	  <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Title>LibreTranslatePlugin</Title>
+    <Authors>silverx69</Authors>
+    <Company>Cloud3d Games</Company>
+    <Copyright>silverx69 © 2023</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/silverx69/AthenaBot.git</RepositoryUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="BscScan.NetCore" Version="1.0.5" />
-    <PackageReference Include="CoinGeckoAsyncApi" Version="1.8.0" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AthenaBot.Core\AthenaBot.Core.csproj" />

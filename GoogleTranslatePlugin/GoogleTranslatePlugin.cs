@@ -5,7 +5,7 @@ using TranslatePlugin.Configuration;
 
 namespace TranslatePlugin
 {
-    public class TranslatePlugin : DiscordBotPlugin
+    public class GoogleTranslatePlugin : DiscordBotPlugin
     {
         public TranslationClient Client {
             get;
@@ -17,12 +17,12 @@ namespace TranslatePlugin
             private set;
         }
 
-        internal static TranslatePlugin Self {
+        internal static GoogleTranslatePlugin Self {
             get;
             private set;
         }
 
-        public TranslatePlugin() {
+        public GoogleTranslatePlugin() {
             Self = this;
         }
 
@@ -32,13 +32,13 @@ namespace TranslatePlugin
             Config = Persistence.LoadModel<PluginConfig>(file);
             if (!File.Exists(file)) Persistence.SaveModel(Config, file);
 
-            if (!string.IsNullOrWhiteSpace(Config.TranslateAPIKey) &&
-                Config.TranslateAPIKey != "YOUR API KEY") {
+            if (!string.IsNullOrWhiteSpace(Config.APIKey) &&
+                Config.APIKey != "YOUR API KEY") {
                 try {
-                    Client = TranslationClient.CreateFromApiKey(Config.TranslateAPIKey);
+                    Client = TranslationClient.CreateFromApiKey(Config.APIKey);
                 }
                 catch (Exception ex) {
-                    Logging.Error("TranslatePlugin", ex);
+                    Logging.Error("GoogleTranslatePlugin", ex);
                 }
             }
         }

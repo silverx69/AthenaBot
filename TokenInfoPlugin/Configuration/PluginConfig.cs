@@ -13,8 +13,8 @@ namespace TokenInfoPlugin.Configuration
         public List<ServerConfig> Servers { get; set; }
 
         public PluginConfig() {
-            RecentTrending = new List<string>();
-            Servers = new List<ServerConfig>();
+            RecentTrending = [];
+            Servers = [];
         }
     }
 }

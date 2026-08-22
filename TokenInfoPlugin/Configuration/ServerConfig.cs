@@ -31,7 +31,7 @@ namespace TokenInfoPlugin.Configuration
 
         public ServerConfig() {
             AnyToken = true;
-            Tokens = new List<TokenConfig>();
+            Tokens = [];
         }
 
         public ServerConfig(ulong guildId)

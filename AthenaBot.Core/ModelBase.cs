@@ -2,6 +2,8 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace AthenaBot
 {
@@ -11,6 +13,9 @@ namespace AthenaBot
     /// </summary>
     public abstract class ModelBase : INotifyPropertyChanged
     {
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> Extended { get; protected set; } = [];
+
         /// <summary>
         /// Uses lambda expressions to select a field and modify the field using Reflection with a new value. 
         /// If the value has changed, the PropertyChanged event will be raised using the CallerMemberName (ie, from inside a property 'set').
@@ -25,8 +30,8 @@ namespace AthenaBot
             if (fieldSelector.Body is not MemberExpression body)
                 throw new ArgumentException("Field selector must be a member access expression.", nameof(fieldSelector));
 
-            var member = body.Member as FieldInfo;
-            if (member == null) throw new InvalidOperationException("Field selector must return a field.");
+            var member = body.Member as FieldInfo ??
+                throw new InvalidOperationException("Field selector must return a field.");
 
             T oldValue = (T)member.GetValue(this);
 
@@ -50,17 +55,18 @@ namespace AthenaBot
             if (fieldSelector.Body is not MemberExpression body)
                 throw new ArgumentException("Field selector must be a member access expression.", nameof(fieldSelector));
 
-            var member = body.Member as FieldInfo;
-            if (member == null) throw new InvalidOperationException("Field selector must return a field.");
+            var member = body.Member as FieldInfo ??
+                throw new InvalidOperationException("Field selector must return a field.");
 
             T oldValue = (T)member.GetValue(this);
 
             if (!Equals(oldValue, newValue)) {
-                body = propSelector.Body as MemberExpression;
-                if (body == null) throw new ArgumentException("Property selector must be a member access expression.", nameof(propSelector));
 
-                var prop = body.Member as PropertyInfo;
-                if (prop == null) throw new InvalidOperationException("Property selector must return a property.");
+                body = propSelector.Body as MemberExpression ??
+                    throw new ArgumentException("Property selector must be a member access expression.", nameof(propSelector));
+
+                var prop = body.Member as PropertyInfo ??
+                    throw new InvalidOperationException("Property selector must return a property.");
 
                 member.SetValue(this, newValue);
                 OnPropertyChanging(prop.Name);
@@ -77,8 +83,8 @@ namespace AthenaBot
             if (propSelector.Body is not MemberExpression body)
                 throw new ArgumentException("Property selector must be a member access expression.", nameof(propSelector));
 
-            var prop = body.Member as PropertyInfo;
-            if (prop == null) throw new InvalidOperationException("Property selector must return a property.");
+            var prop = body.Member as PropertyInfo ??
+                throw new InvalidOperationException("Property selector must return a property.");
 
             OnPropertyChanging(prop.Name);
         }

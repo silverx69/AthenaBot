@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-
-namespace AthenaBot.Configuration
+﻿namespace AthenaBot.Configuration
 {
     public class DiscordBotConfig : ModelBase
     {
@@ -13,13 +10,9 @@ namespace AthenaBot.Configuration
 
         public ModelList<ServerConfig> Servers { get; set; }
 
-        [JsonExtensionData]
-        public Dictionary<string, JsonElement> Extended { get; set; }
-
         public DiscordBotConfig() {
-            Plugins = new ModelList<string>();
-            Servers = new ModelList<ServerConfig>();
-            Extended = new Dictionary<string, JsonElement>();
+            Plugins = [];
+            Servers = [];
         }
     }
 }

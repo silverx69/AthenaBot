@@ -1,5 +1,4 @@
 ﻿using Discord;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace AthenaBot.Configuration
@@ -10,21 +9,15 @@ namespace AthenaBot.Configuration
 
         public string Name { get; set; }
 
-        [JsonExtensionData]
-        public Dictionary<string, JsonElement> Extended { get; private set; }
-
         [JsonIgnore]
         public string Details { get; }
 
         [JsonIgnore]
         public ActivityProperties Flags { get; } = ActivityProperties.None;
 
-        public ActivityConfig() {
-            Extended = new Dictionary<string, JsonElement>();
-        }
+        public ActivityConfig() { }
 
-        public ActivityConfig(ActivityType type, string text)
-            : this() {
+        public ActivityConfig(ActivityType type, string text) {
             Type = type;
             Name = text;
         }

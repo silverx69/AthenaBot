@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-
-namespace AthenaBot.Configuration
+﻿namespace AthenaBot.Configuration
 {
     public class ServerConfig : ModelBase
     {
@@ -11,12 +8,8 @@ namespace AthenaBot.Configuration
 
         public ModelList<CommandConfig> Commands { get; set; }
 
-        [JsonExtensionData]
-        public Dictionary<string, JsonElement> Extended { get; set; }
-
         public ServerConfig() {
-            Commands = new ModelList<CommandConfig>();
-            Extended = new Dictionary<string, JsonElement>();
+            Commands = [];
         }
 
         public ServerConfig(ulong id)

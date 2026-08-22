@@ -14,7 +14,7 @@ namespace OpenSeaPlugin.Configuration
 
         public ServerConfig() {
             AnyCollection = true;
-            Collections = new List<CollectionConfig>();
+            Collections = [];
         }
 
         public ServerConfig(ulong id)

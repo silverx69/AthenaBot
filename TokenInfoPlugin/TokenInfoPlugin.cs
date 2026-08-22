@@ -183,7 +183,7 @@ namespace TokenInfoPlugin
                 if (config.AnyToken && !string.IsNullOrWhiteSpace(id))
                     tconfig = config.Tokens.Find(s => s.CoinGeckoId == id || s.Aliases.Contains(id));
                 else {
-                    tconfig = config.Tokens.Find(s => s.Default) ?? 
+                    tconfig = config.Tokens.Find(s => s.Default) ??
                         throw new TokenInfoException("No default token has been configured.");
                 }
 

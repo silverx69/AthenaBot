@@ -30,9 +30,9 @@ namespace TokenInfoPlugin.Configuration
         public TokenConfig() {
             Enabled = true;
             Color = Color.Default;
-            Aliases = new List<string>();
-            DevWallets = new List<string>();
-            BurnWallets = new List<string>();
+            Aliases = [];
+            DevWallets = [];
+            BurnWallets = [];
             Trending = new TrendingConfig();
         }
 

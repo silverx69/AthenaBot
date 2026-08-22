@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.9.12112.369 stable
+VisualStudioVersion = 18.9.12112.369
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AthenaBot", "AthenaBot\AthenaBot.csproj", "{DFE26557-2F0F-43F1-8687-AB146B676347}"
 EndProject
@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TokenInfoPlugin", "TokenInf
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenSeaPlugin", "OpenSeaPlugin\OpenSeaPlugin.csproj", "{B2034967-2256-478D-AB08-253E3C8199C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TranslatePlugin", "TranslatePlugin\TranslatePlugin.csproj", "{B5D7784E-FD4D-43B8-8E0B-2F42CA82706C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibreTranslatePlugin", "LibreTranslatePlugin\LibreTranslatePlugin.csproj", "{F80B279F-E353-4293-A63A-B0C629FF4FA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleTranslatePlugin", "GoogleTranslatePlugin\GoogleTranslatePlugin.csproj", "{B3661F36-644F-BF63-0E0E-4E9EFC33CEFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,10 +39,14 @@ Global
 		{B2034967-2256-478D-AB08-253E3C8199C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2034967-2256-478D-AB08-253E3C8199C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2034967-2256-478D-AB08-253E3C8199C3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B5D7784E-FD4D-43B8-8E0B-2F42CA82706C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B5D7784E-FD4D-43B8-8E0B-2F42CA82706C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B5D7784E-FD4D-43B8-8E0B-2F42CA82706C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B5D7784E-FD4D-43B8-8E0B-2F42CA82706C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F80B279F-E353-4293-A63A-B0C629FF4FA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F80B279F-E353-4293-A63A-B0C629FF4FA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F80B279F-E353-4293-A63A-B0C629FF4FA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F80B279F-E353-4293-A63A-B0C629FF4FA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3661F36-644F-BF63-0E0E-4E9EFC33CEFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3661F36-644F-BF63-0E0E-4E9EFC33CEFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3661F36-644F-BF63-0E0E-4E9EFC33CEFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3661F36-644F-BF63-0E0E-4E9EFC33CEFA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,7 +54,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{C4B38944-AA38-4867-9C84-D2B375657C03} = {21CB1CA2-6640-4642-96A1-9D5FC7A86962}
 		{B2034967-2256-478D-AB08-253E3C8199C3} = {21CB1CA2-6640-4642-96A1-9D5FC7A86962}
-		{B5D7784E-FD4D-43B8-8E0B-2F42CA82706C} = {21CB1CA2-6640-4642-96A1-9D5FC7A86962}
+		{F80B279F-E353-4293-A63A-B0C629FF4FA8} = {21CB1CA2-6640-4642-96A1-9D5FC7A86962}
+		{B3661F36-644F-BF63-0E0E-4E9EFC33CEFA} = {21CB1CA2-6640-4642-96A1-9D5FC7A86962}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E7E177DD-B099-4005-AAEC-878AD7DFEBE2}

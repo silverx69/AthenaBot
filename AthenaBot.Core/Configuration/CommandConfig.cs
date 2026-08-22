@@ -1,13 +1,9 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-
-namespace AthenaBot.Configuration
+﻿namespace AthenaBot.Configuration
 {
     public class CommandConfig : ModelBase
     {
         public string Name { get; set; }
 
-        [JsonPropertyName("adminOnly")]
         public bool AdminOnly { get; set; }
 
         public bool Enabled { get; set; }
@@ -16,14 +12,10 @@ namespace AthenaBot.Configuration
 
         public ModelList<ChannelsConfig> Channels { get; set; }
 
-        [JsonExtensionData]
-        public Dictionary<string, JsonElement> Extended { get; set; }
-
         public CommandConfig() {
             Enabled = true;
-            Roles = new ModelList<string>();
-            Channels = new ModelList<ChannelsConfig>();
-            Extended = new Dictionary<string, JsonElement>();
+            Roles = [];
+            Channels = [];
         }
 
         public CommandConfig(string name) {
@@ -31,9 +23,8 @@ namespace AthenaBot.Configuration
                 throw new ArgumentNullException(nameof(name));
             Name = name;
             Enabled = true;
-            Roles = new ModelList<string>();
-            Channels = new ModelList<ChannelsConfig>();
-            Extended = new Dictionary<string, JsonElement>();
+            Roles = [];
+            Channels = [];
         }
     }
 }
