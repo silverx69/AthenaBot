@@ -1,7 +1,7 @@
 ﻿using AthenaBot.Interactions;
 using Discord.Interactions;
 
-namespace TranslatePlugin.Commands
+namespace GoogleTranslatePlugin.Commands
 {
     [RequireContext(ContextType.Guild)]
     public class SlashCommandModule : AthenaInteractionModule

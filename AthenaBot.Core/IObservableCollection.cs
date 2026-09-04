@@ -5,7 +5,7 @@ using System.ComponentModel;
 namespace AthenaBot
 {
     /// <summary>
-    /// A collection that implements INotifyPropertyChanged and INotifyCollectionChanged for MVVM and observer binding.
+    /// A generic collection that implements INotifyPropertyChanged and INotifyCollectionChanged for MVVM and observer binding.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public interface IObservableCollection<T> :
@@ -35,7 +35,7 @@ namespace AthenaBot
     }
 
     /// <summary>
-    /// A read-only collection that implements INotifyPropertyChanged and INotifyCollectionChanged for MVVM and observer binding.
+    /// A read-only generic collection that implements INotifyPropertyChanged and INotifyCollectionChanged for MVVM and observer binding.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public interface IReadOnlyObservableCollection<T> :

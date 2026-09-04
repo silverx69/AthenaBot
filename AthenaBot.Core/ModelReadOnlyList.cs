@@ -7,7 +7,6 @@ namespace AthenaBot
     /// <summary>
     /// A read-only list implementation that makes it easier to use the MVVM pattern more naturally while still being supported by built-in serializers.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public class ModelReadOnlyList<T> :
         ModelBase,
         IReadOnlyObservableCollection<T>
@@ -26,7 +25,7 @@ namespace AthenaBot
         }
 
         protected ModelReadOnlyList() {
-            InnerList = new ModelList<T>();
+            InnerList = [];
         }
 
         public ModelReadOnlyList(ModelList<T> innerList) {
@@ -35,7 +34,7 @@ namespace AthenaBot
         }
 
         private void InnerList_PropertyChanged(object sender, PropertyChangedEventArgs e) {
-            OnPropertyChanging(e.PropertyName);
+            OnPropertyChanged(e.PropertyName);
         }
 
         public void CopyTo(Array array, int index) {

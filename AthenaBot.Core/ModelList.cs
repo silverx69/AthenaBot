@@ -6,7 +6,6 @@ namespace AthenaBot
     /// <summary>
     /// A list implementation that makes it easier to use the MVVM pattern more naturally while still being supported by built-in serializers.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public class ModelList<T> :
         ModelBase,
         IObservableCollection<T>
@@ -41,7 +40,7 @@ namespace AthenaBot
 
 
         public ModelList() {
-            m_list = new List<T>();
+            m_list = [];
         }
 
         public ModelList(int capacity) {
@@ -49,7 +48,7 @@ namespace AthenaBot
         }
 
         public ModelList(IEnumerable<T> collection) {
-            m_list = new List<T>(collection);
+            m_list = [.. collection];
         }
 
 
@@ -163,7 +162,7 @@ namespace AthenaBot
         }
 
         public virtual int RemoveAll(Predicate<T> match) {
-            List<T> tmp = new List<T>();
+            List<T> tmp = [];
             lock (SyncRoot) {
                 for (int i = m_list.Count - 1; i >= 0; i--) {
                     if (match(m_list[i])) {
@@ -182,7 +181,7 @@ namespace AthenaBot
         }
 
         public virtual T[] ToArray() {
-            lock (SyncRoot) return m_list.ToArray();
+            lock (SyncRoot) return [.. m_list];
         }
 
         public virtual void CopyTo(T[] array, int arrayIndex) {
@@ -194,6 +193,7 @@ namespace AthenaBot
         }
 
         public virtual void CopyTo(Array array, int index) {
+            // ToArray() is already locked, so we don't need to lock again here.
             Array.Copy(ToArray(), 0, array, index, Count);
         }
 
@@ -215,12 +215,12 @@ namespace AthenaBot
 
         protected virtual void OnCollectionCleared() {
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-            RaisePropertyChanged(nameof(Count));
+            OnPropertyChanged(nameof(Count));
         }
 
         protected virtual void OnCollectionChanged(T newitem, T olditem, int index) {
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, newitem, olditem, index));
-            RaisePropertyChanged(nameof(Count));
+            OnPropertyChanged(nameof(Count));
         }
 
         protected virtual void OnCollectionChanged(NotifyCollectionChangedAction action, T item, int index = -1) {
@@ -228,7 +228,7 @@ namespace AthenaBot
                 CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(action, item));
             else
                 CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(action, item, index));
-            RaisePropertyChanged(nameof(Count));
+            OnPropertyChanged(nameof(Count));
         }
 
         protected virtual void OnCollectionChanged(NotifyCollectionChangedAction action, IEnumerable<T> collection, int index = -1) {
@@ -236,7 +236,7 @@ namespace AthenaBot
                 CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(action, collection.ToList()));
             else
                 CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(action, collection.ToList(), index));
-            RaisePropertyChanged(nameof(Count));
+            OnPropertyChanged(nameof(Count));
         }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;

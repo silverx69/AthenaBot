@@ -2,13 +2,8 @@
 {
     public class Target
     {
-        public Dictionary<string, string> Dependencies { get; set; }
+        public Dictionary<string, string> Dependencies { get; set; } = [];
 
-        public Dictionary<string, Dictionary<string, string>> Runtime { get; set; }
-
-        public Target() {
-            Dependencies = [];
-            Runtime = [];
-        }
+        public Dictionary<string, Dictionary<string, string>> Runtime { get; set; } = [];
     }
 }

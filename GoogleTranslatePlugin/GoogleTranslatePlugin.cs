@@ -1,18 +1,18 @@
 ﻿using AthenaBot;
 using AthenaBot.Plugins;
 using Google.Cloud.Translation.V2;
-using TranslatePlugin.Configuration;
+using GoogleTranslatePlugin.Configuration;
 
-namespace TranslatePlugin
+namespace GoogleTranslatePlugin
 {
-    public class GoogleTranslatePlugin : DiscordBotPlugin
+    public class GoogleTranslatePlugin : AthenaBotPlugin
     {
         public TranslationClient Client {
             get;
             private set;
         }
 
-        internal static PluginConfig Config {
+        internal PluginConfig Config {
             get;
             private set;
         }
@@ -29,8 +29,8 @@ namespace TranslatePlugin
         public override void OnPluginLoaded() {
             string file = Path.Combine(Directory, "config.json");
 
-            Config = Persistence.LoadModel<PluginConfig>(file);
-            if (!File.Exists(file)) Persistence.SaveModel(Config, file);
+            Config = Persistence.Load<PluginConfig>(file);
+            if (!File.Exists(file)) Persistence.Save(Config, file);
 
             if (!string.IsNullOrWhiteSpace(Config.APIKey) &&
                 Config.APIKey != "YOUR API KEY") {
@@ -44,7 +44,7 @@ namespace TranslatePlugin
         }
 
         public override void OnPluginKilled() {
-            Persistence.SaveModel(Config, Path.Combine(Directory, "config.json"));
+            Persistence.Save(Config, Path.Combine(Directory, "config.json"));
             Client?.Dispose();
             Client = null;
         }

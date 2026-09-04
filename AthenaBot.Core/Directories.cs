@@ -34,9 +34,9 @@
 
         private void AppDataChanged() {
             EnsureExists();
-            RaisePropertyChanged(nameof(AppData));
-            RaisePropertyChanged(nameof(Logs));
-            RaisePropertyChanged(nameof(Plugins));
+            OnPropertyChanged(nameof(AppData));
+            OnPropertyChanged(nameof(Logs));
+            OnPropertyChanged(nameof(Plugins));
         }
 
         public void EnsureExists() {

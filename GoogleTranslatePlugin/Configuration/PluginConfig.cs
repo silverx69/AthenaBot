@@ -1,8 +1,6 @@
-﻿using AthenaBot;
-
-namespace TranslatePlugin.Configuration
+﻿namespace GoogleTranslatePlugin.Configuration
 {
-    public class PluginConfig : ModelBase
+    public class PluginConfig
     {
         public string APIKey { get; set; } = "YOUR API KEY";
 

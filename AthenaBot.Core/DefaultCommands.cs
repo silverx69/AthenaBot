@@ -4,10 +4,12 @@ using Discord.Interactions;
 
 namespace AthenaBot
 {
-    public sealed class CommandModule : AthenaInteractionModule
+    public sealed class DefaultCommands : AthenaInteractionModule
     {
         [SlashCommand("listplugins", "Lists all loaded AthenaBot plugins.")]
         public async Task ListPlugins() {
+            await DeferAsync();
+
             var eb = new EmbedBuilder {
                 Title = "Loaded Plugins",
                 Description = Context.Bot.Plugins
@@ -22,6 +24,8 @@ namespace AthenaBot
 
         [SlashCommand("loadplugin", "Loads an AthenaBot plugin.", true)]
         public async Task LoadPlugin([Summary(description: "The name of the plugin to load.")] string name) {
+            await DeferAsync();
+
             if (Context.Bot.Plugins.LoadPlugin(name))
                 await FollowupAsync("Plugin loaded successfully.");
             else
@@ -30,6 +34,8 @@ namespace AthenaBot
 
         [SlashCommand("killplugin", "Kills an AthenaBot plugin.", true)]
         public async Task KillPlugin([Summary(description: "The name of the plugin to kill.")] string name) {
+            await DeferAsync();
+
             Context.Bot.Plugins.KillPlugin(name);
             await FollowupAsync("Plugin killed successfully.");
         }

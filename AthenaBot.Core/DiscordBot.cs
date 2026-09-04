@@ -17,7 +17,7 @@ namespace AthenaBot
         Directories directories = null;
         DiscordBotConfig config = null;
         DiscordSocketClient client = null;
-        IDiscordBotPluginHost plugins = null;
+        IAthenaBotPluginHost plugins = null;
 
         CommandHandler commands;
         readonly string configFile = string.Empty;
@@ -47,7 +47,7 @@ namespace AthenaBot
             private set { OnPropertyChanged(() => client, value); }
         }
 
-        public IDiscordBotPluginHost Plugins {
+        public IAthenaBotPluginHost Plugins {
             get { return plugins; }
             private set { OnPropertyChanged(() => plugins, value); }
         }
@@ -61,19 +61,19 @@ namespace AthenaBot
         public DiscordBot(Directories directories) {
             Directories = directories ?? new Directories();
             configFile = Path.Combine(Directories.AppData, "config.json");
-            Plugins = new DiscordBotPluginHost(this);
+            Plugins = new AthenaBotPluginHost(this);
         }
 
         public void SaveConfig() {
-            Persistence.SaveModel(Config, configFile);
+            Persistence.Save(Config, configFile);
         }
 
-        public ServerConfig FindConfig(ulong guildId) {
-            return Config.Servers.Find(s => s.Id == guildId);
+        public async Task SaveConfigAsync() {
+            await Persistence.SaveAsync(Config, configFile);
         }
 
         public async Task StartAsync(GatewayIntents gatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent) {
-            Config = await Persistence.LoadModelAsync<DiscordBotConfig>(configFile);
+            Config = await Persistence.LoadAsync<DiscordBotConfig>(configFile);
 
             Client = new DiscordSocketClient(new DiscordSocketConfig() {
                 UseInteractionSnowflakeDate = false,//clock goes out of sync very easily!!
@@ -94,14 +94,14 @@ namespace AthenaBot
             commands.CommandService.Log += LogHandler;
             commands.InteractionService.Log += LogHandler;
 
-            await commands.InstallCommandsAsync();
+            await commands.InstallHandlerAsync();
             await Client.LoginAsync(TokenType.Bot, Config.DiscordApiKey);
         }
 
         public async Task StopAsync() {
 
             await Client?.StopAsync();
-            await Persistence.SaveModelAsync(Config, configFile);
+            await Persistence.SaveAsync(Config, configFile);
 
             IsConnected = false;
             IsReady = false;
@@ -110,6 +110,7 @@ namespace AthenaBot
             Plugins = null;
 
             if (commands is not null) {
+                commands.UninstallHandler();
                 commands.CommandService.Log -= LogHandler;
                 commands.InteractionService.Log -= LogHandler;
                 commands = null;
@@ -154,10 +155,6 @@ namespace AthenaBot
         }
 
         private async Task JoinedGuild(SocketGuild guild) {
-            if (!Config.Servers.Contains(s => s.Id == guild.Id)) {
-                Config.Servers.Add(new ServerConfig(guild.Id));
-                await Persistence.SaveModelAsync(Config, configFile);
-            }
             await commands.InstallInteractionsAsync(guild.Id);
         }
 
@@ -179,9 +176,9 @@ namespace AthenaBot
                     m.Severity.ToLogLevel(),
                     "Interaction",
                     "Interaction \"{0}\" failed to execute in channel #{1}. {2}",
-                    iex.Command,
-                    iex.Context.Channel.Name,
-                    iex.Message);
+                    iex.CommandInfo.Name,
+                    iex.InteractionContext.Channel.Name,
+                    iex.InnerException.Message);
             else
                 await Logging.ErrorAsync(m.Severity.ToLogLevel(), "Gateway", m.Exception);
         }
@@ -189,64 +186,60 @@ namespace AthenaBot
         public bool ValidateCommandRoles(AthenaCommandContext context, CommandInfo cmd) {
             if (context.Guild == null)
                 return true;
-            var user = context.User as SocketGuildUser;
-            var channel = context.Channel as SocketGuildChannel;
 
-            ServerConfig config = FindConfig(context.Guild.Id);
-            if (config == null) {
-                config = new ServerConfig(context.Guild.Id);
-                Config.Servers.Add(config);
-            }
-
-            CommandConfig ccmd = config.Commands.Find(s => s.Name == cmd.Aliases[0]);
-
-            if (ccmd == null) {
-                ccmd = new CommandConfig(cmd.Aliases[0]);
-                config.Commands.Add(ccmd);
-            }
-
-            return ValidateCommandRoles(context.Guild, channel, user, ccmd);
+            return ValidateCommandRoles(
+                context.Guild,
+                context.Channel as SocketGuildChannel,
+                context.User as SocketGuildUser,
+                cmd.Aliases[0]);
         }
 
         public bool ValidateCommandRoles(AthenaInteractionContext context, ICommandInfo cmd) {
             if (context.Guild == null)
                 return true;
-            var user = context.User as SocketGuildUser;
-            var channel = context.Channel as SocketGuildChannel;
 
-            ServerConfig config = FindConfig(context.Guild.Id);
-            if (config == null) {
-                config = new ServerConfig(context.Guild.Id);
-                Config.Servers.Add(config);
-            }
-
-            string cname = cmd.ToString();
-            CommandConfig ccmd = config.Commands.Find(s => s.Name == cname);
-
-            if (ccmd == null) {
-                ccmd = new CommandConfig(cname);
-                config.Commands.Add(ccmd);
-            }
-
-            return ValidateCommandRoles(context.Guild, channel, user, ccmd);
+            return ValidateCommandRoles(
+                context.Guild,
+                context.Channel as SocketGuildChannel,
+                context.User as SocketGuildUser,
+                cmd.ToString());
         }
 
-        private static bool ValidateCommandRoles(SocketGuild guild, SocketGuildChannel channel, SocketGuildUser user, CommandConfig ccmd) {
+        private bool ValidateCommandRoles(SocketGuild guild, SocketGuildChannel channel, SocketGuildUser user, string cmd) {
+            var cmdConfig = config.Commands.Find(s => s.Name.Equals(cmd, StringComparison.InvariantCultureIgnoreCase));
 
-            ChannelsConfig chanConfig = ccmd.Channels.Find(s => s.Id == channel.Id);
+            if (cmdConfig is null) {
+                foreach (var plugin in Plugins) {
+                    cmdConfig = plugin.Commands.Find(s => s.Name.Equals(cmd, StringComparison.InvariantCultureIgnoreCase));
+                    if (cmdConfig is not null) break;
+                }
+                cmdConfig ??= new CommandConfig(cmd);
+            }
+
+            var serverConfig = cmdConfig.Servers.Find(s => s.Id == guild.Id);
+            if (serverConfig is null) {
+                serverConfig = new CommandServerConfig(guild.Id, true);
+                cmdConfig.Servers.Add(serverConfig);
+            }
+
+            if (!serverConfig.Enabled)
+                return false;
+
+            if (serverConfig.AdminOnly && (!user.IsOwnerOf(guild) || !user.GuildPermissions.Administrator))
+                return false;
+
+            if (serverConfig.Roles.Count > 0 &&
+                !user.Roles.Contains(s => s.Guild.Id == guild.Id && serverConfig.Roles.Contains(s.Name)))
+                return false;
+
+            var chanConfig = serverConfig.Channels.Find(s => s.Id == channel.Id);
+
             if (chanConfig is null) {
-                chanConfig = new ChannelsConfig(channel.Id, ccmd.Enabled);
-                ccmd.Channels.Add(chanConfig);
+                chanConfig = new CommandChannelConfig(channel.Id, true);
+                serverConfig.Channels.Add(chanConfig);
             }
 
             if (!chanConfig.Enabled)
-                return false;
-
-            if (ccmd.AdminOnly && (!user.IsOwnerOf(guild) || !user.GuildPermissions.Administrator))
-                return false;
-
-            if (ccmd.Roles.Count > 0 &&
-                !user.Roles.Contains(s => s.Guild.Id == guild.Id && ccmd.Roles.Contains(s.Name)))
                 return false;
 
             return true;

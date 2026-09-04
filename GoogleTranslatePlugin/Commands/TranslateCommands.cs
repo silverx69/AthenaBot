@@ -2,7 +2,7 @@
 using Discord;
 using System.Globalization;
 
-namespace TranslatePlugin.Commands
+namespace GoogleTranslatePlugin.Commands
 {
     static class TranslateCommands
     {
@@ -19,7 +19,7 @@ namespace TranslatePlugin.Commands
                 await Task.Delay(1000);
 
             if (string.IsNullOrWhiteSpace(to)) {
-                var server = GoogleTranslatePlugin.Config.Servers.Find(s => s.Id == guildId);
+                var server = GoogleTranslatePlugin.Self.Config.Servers.Find(s => s.Id == guildId);
                 to = ToLanguageCode(server?.Language);
             }
             else to = ToLanguageCode(to);
@@ -54,17 +54,17 @@ namespace TranslatePlugin.Commands
                 DateTime now = DateTime.UtcNow;
                 if (now.Subtract(fileInfo.LastWriteTimeUtc).TotalDays < 7) {
                     cached = true;
-                    results = await Persistence.LoadModelAsync<List<string>>(fileInfo.FullName);
+                    results = await Persistence.LoadAsync<List<string>>(fileInfo.FullName);
                 }
             }
 
             if (!cached) {
                 var response = await GoogleTranslatePlugin.Self.Client.ListLanguagesAsync();
-                results = response.Select(s => s.Code).ToList();
-                await Persistence.SaveModelAsync(results, fileInfo.FullName);
+                results = [.. response.Select(s => s.Code)];
+                await Persistence.SaveAsync(results, fileInfo.FullName);
             }
 
-            Languages = new List<CultureInfo>();
+            Languages = [];
 
             foreach (string language in results) {
                 try {

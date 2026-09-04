@@ -3,8 +3,7 @@
     public interface IPlugin
     {
         /// <summary>
-        /// Sets the full path to the directory the plugin was loaded from. 
-        /// Set by the PluginHost so the IPlugin knows where it was loaded from, has no effect if modified.
+        /// Sets the full path to the directory the plugin was loaded from (set once by the PluginHost).
         /// </summary>
         string Directory { set; }
         /// <summary>

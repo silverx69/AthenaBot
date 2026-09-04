@@ -11,7 +11,7 @@ using TokenInfoPlugin.Configuration;
 
 namespace TokenInfoPlugin
 {
-    public class TokenInfoPlugin : DiscordBotPlugin
+    public class TokenInfoPlugin : AthenaBotPlugin
     {
         Timer updateTimer = null;
         DateTime lastNicknames;
@@ -23,7 +23,7 @@ namespace TokenInfoPlugin
 
         const string BscScanApi = "https://api.bscscan.com/api";
 
-        internal static PluginConfig Config {
+        internal PluginConfig Config {
             get;
             private set;
         }
@@ -40,8 +40,8 @@ namespace TokenInfoPlugin
         public override void OnPluginLoaded() {
             string file = Path.Combine(Directory, "config.json");
 
-            Config = Persistence.LoadModel<PluginConfig>(file);
-            if (!File.Exists(file)) Persistence.SaveModel(Config, file);
+            Config = Persistence.Load<PluginConfig>(file);
+            if (!File.Exists(file)) Persistence.Save(Config, file);
 
             if (DateTime.MinValue.Equals(lastNicknames))
                 lastNicknames = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(10));
@@ -61,7 +61,7 @@ namespace TokenInfoPlugin
             updateTimer.Change(-1, -1);
             updateTimer.Dispose();
             updateTimer = null;
-            Persistence.SaveModel(Config, Path.Combine(Directory, "config.json"));
+            Persistence.Save(Config, Path.Combine(Directory, "config.json"));
             recentInfos.Clear();
             recentInfos = null;
         }
@@ -275,7 +275,7 @@ namespace TokenInfoPlugin
             return recent;
         }
 
-        private static async Task<List<string>> GetTrendingSearches() {
+        private static async Task<ModelList<string>> GetTrendingSearches() {
             using var client = new HttpClient();
             var search = new SearchClient(client, jsonSettings);
 

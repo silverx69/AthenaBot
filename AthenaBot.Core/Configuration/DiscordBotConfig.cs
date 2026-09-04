@@ -2,17 +2,14 @@
 {
     public class DiscordBotConfig : ModelBase
     {
-        public string DiscordApiKey { get; set; }
+        public string DiscordApiKey { get; set; } = "YOUR API KEY";
+
+        public bool UseDefaultCommands { get; set; } = true;
 
         public ActivityConfig Activity { get; set; }
 
-        public ModelList<string> Plugins { get; set; }
+        public ModelList<string> Plugins { get; set; } = [];
 
-        public ModelList<ServerConfig> Servers { get; set; }
-
-        public DiscordBotConfig() {
-            Plugins = [];
-            Servers = [];
-        }
+        public ModelList<CommandConfig> Commands { get; set; } = [];
     }
 }

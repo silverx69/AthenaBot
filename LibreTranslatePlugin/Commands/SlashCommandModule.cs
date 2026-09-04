@@ -19,7 +19,6 @@ namespace LibreTranslatePlugin.Commands
             await DeferAsync(ephemeral: true);
 
             to ??= Context.Interaction.UserLocale;
-            to = LibreTranslatePlugin.ToLanguageCode(to);
 
             var result = await LibreTranslatePlugin.Self.TranslateAsync(text, to, from);
             if (result == null)
@@ -30,8 +29,8 @@ namespace LibreTranslatePlugin.Commands
                     .AddField("Result", result.TranslatedText)
                     .WithFooter(string.Format(
                         "{0} -> {1}",
-                        LibreTranslatePlugin.FromLanguageCode(result.DetectedLanguage.Language),
-                        LibreTranslatePlugin.FromLanguageCode(to)))
+                        LibreTranslatePlugin.FromLanguageCode(result.SourceLanguage),
+                        LibreTranslatePlugin.FromLanguageCode(result.TranslatedLanguage)))
                     .Build();
                 await FollowupAsync(embed: embed);
             }

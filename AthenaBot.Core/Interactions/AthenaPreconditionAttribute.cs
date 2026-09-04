@@ -3,9 +3,13 @@ using Discord.Interactions;
 
 namespace AthenaBot.Interactions
 {
-    public sealed class RequireConfigAttribute : PreconditionAttribute
+    /// <summary>
+    /// Acts as a hook for validating command permissions, specified in the configuration, at runtime. 
+    /// AthenaBot's built-in modules have this attribute applied to their class definition by default.
+    /// </summary>
+    public sealed class AthenaPreconditionAttribute : PreconditionAttribute
     {
-        public RequireConfigAttribute() { }
+        public AthenaPreconditionAttribute() { }
 
         public override Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo command, IServiceProvider services) {
             if (context is AthenaInteractionContext ctx) {

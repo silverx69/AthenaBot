@@ -2,11 +2,11 @@
 
 namespace LibreTranslatePlugin.Configuration
 {
-    public class PluginConfig : ModelBase
+    public class PluginConfig
     {
         public string APIUrl { get; set; } = "http://localhost:5000";
         public string APIKey { get; set; } = "YOUR API KEY";
 
-        public List<ServerConfig> Servers { get; set; } = [];
+        public ModelList<ServerConfig> Servers { get; set; } = [];
     }
 }

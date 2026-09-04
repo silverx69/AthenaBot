@@ -122,8 +122,13 @@ namespace AthenaBot
 
         public static void WriteLine(LogLevel level, string source, string format, params object[] args) {
             if (level <= LogLevel) {
+                var line = BuildLine(level, source, format, args);
+
+                LogMessage?.Invoke(line);
+
                 using var writer = GetWriter();
-                writer.WriteLine(BuildLine(level, source, format, args));
+
+                writer.WriteLine(string.Format(LineFormat, line.Intro, line.Message));
                 writer.Flush();
             }
         }
@@ -143,9 +148,9 @@ namespace AthenaBot
         }
 
         private static async Task ClearQueueAsync(StreamWriter writer) {
-            while (pendingWrites.TryDequeue(out LogMessageEventArgs e)) {
-                LogMessage?.Invoke(e);
-                await writer.WriteLineAsync(string.Format(LineFormat, e.Intro, e.Message));
+            while (pendingWrites.TryDequeue(out LogMessageEventArgs line)) {
+                LogMessage?.Invoke(line);
+                await writer.WriteLineAsync(string.Format(LineFormat, line.Intro, line.Message));
             }
         }
 

@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace LibreTranslatePlugin
 {
-    public class LibreTranslatePlugin : DiscordBotPlugin
+    public class LibreTranslatePlugin : AthenaBotPlugin
     {
         static List<CultureInfo> Languages;
 
@@ -15,7 +15,7 @@ namespace LibreTranslatePlugin
             private set;
         }
 
-        internal static PluginConfig Config {
+        internal PluginConfig Config {
             get;
             private set;
         }
@@ -32,8 +32,8 @@ namespace LibreTranslatePlugin
         public override void OnPluginLoaded() {
             string file = Path.Combine(Directory, "config.json");
 
-            Config = Persistence.LoadModel<PluginConfig>(file);
-            if (!File.Exists(file)) Persistence.SaveModel(Config, file);
+            Config = Persistence.Load<PluginConfig>(file);
+            if (!File.Exists(file)) Persistence.Save(Config, file);
 
             try {
                 Client = new TranslateClient(Config.APIUrl, Config.APIKey);
@@ -45,12 +45,11 @@ namespace LibreTranslatePlugin
 
         public override void OnPluginKilled() {
             Client?.Dispose();
-            Persistence.SaveModel(Config, Path.Combine(Directory, "config.json"));
+            Persistence.Save(Config, Path.Combine(Directory, "config.json"));
         }
 
-        public async Task<bool> LoadLanguageListAsync() {
-            if (Languages != null)
-                return false;
+        public async Task LoadLanguageListAsync() {
+            if (Languages != null) return;
 
             var fileInfo = new FileInfo(Path.Combine(Directory, "langs.json"));
 
@@ -61,14 +60,14 @@ namespace LibreTranslatePlugin
                 DateTime now = DateTime.UtcNow;
                 if (now.Subtract(fileInfo.LastWriteTimeUtc).TotalDays < 7) {
                     cached = true;
-                    results = await Persistence.LoadModelAsync<List<string>>(fileInfo.FullName);
+                    results = await Persistence.LoadAsync<List<string>>(fileInfo.FullName);
                 }
             }
 
             if (!cached) {
                 var response = await Client.GetLanguagesAsync();
                 results = [.. response.Select(s => s.Code)];
-                await Persistence.SaveModelAsync(results, fileInfo.FullName);
+                await Persistence.SaveAsync(results, fileInfo.FullName);
             }
 
             Languages = [];
@@ -82,26 +81,21 @@ namespace LibreTranslatePlugin
                     await Logging.ErrorAsync("LibreTranslatePlugin", cnf);
                 }
             }
-
-            return !cached;
         }
 
-        public async Task<TranslateResponse> TranslateAsync(string text, string to, string from = "auto") {
+        public async Task<TranslateResult> TranslateAsync(string text, string to, string from = "auto") {
             if (string.IsNullOrWhiteSpace(text))
                 return null;
 
             if (Client == null)
                 throw new InvalidOperationException("Attempted to call Translate without a valid configuration.");
 
-            if (await LoadLanguageListAsync())
-                await Task.Delay(1000);
-
-            to = ToLanguageCode(to);
+            await LoadLanguageListAsync();
 
             if (from != "auto")
                 from = ToLanguageCode(from);
 
-            return await Client.TranslateAsync(text, to, from);
+            return await Client.TranslateAsync(text, ToLanguageCode(to), from);
         }
 
         public static string ToLanguageCode(string language) {
@@ -109,7 +103,8 @@ namespace LibreTranslatePlugin
                 throw new ArgumentNullException(nameof(language));
 
             if (Languages != null) {
-                language = language.Split("-")[0];
+                // in case we've been passed a locale instead of a language code
+                language = language.Split('-')[0];
 
                 var lang = Languages.Find(s =>
                     s.Name.Equals(language, StringComparison.OrdinalIgnoreCase) ||

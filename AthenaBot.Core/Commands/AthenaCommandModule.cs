@@ -2,7 +2,7 @@
 
 namespace AthenaBot.Commands
 {
-    [RequireConfig]
+    [AthenaPrecondition]
     public abstract class AthenaCommandModule : ModuleBase<AthenaCommandContext>
     {
     }

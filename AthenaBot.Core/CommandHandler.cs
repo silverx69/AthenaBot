@@ -22,14 +22,14 @@ namespace AthenaBot
 
         class PluginCommands
         {
-            public PluginContext<DiscordBotPlugin> Context { get; set; }
+            public PluginContext<AthenaBotPlugin> Context { get; set; }
             public List<Discord.Commands.ModuleInfo> CommandModules { get; set; }
             public List<Discord.Interactions.ModuleInfo> InteractionModules { get; set; }
             public PluginCommands() {
                 CommandModules = [];
                 InteractionModules = [];
             }
-            public PluginCommands(PluginContext<DiscordBotPlugin> context)
+            public PluginCommands(PluginContext<AthenaBotPlugin> context)
                 : this() {
                 Context = context;
             }
@@ -51,16 +51,43 @@ namespace AthenaBot
             InteractionService = new InteractionService(bot.Client, new InteractionServiceConfig());
         }
 
-        private async void OnPluginLoaded(PluginContext<DiscordBotPlugin> ctx) {
+        public async Task InstallHandlerAsync() {
+            if (bot.Config.UseDefaultCommands) {
+                //load AthenaBot's built-in commands
+                var asm = Assembly.GetExecutingAssembly();
+                await CommandService.AddModulesAsync(asm, null);
+                await InteractionService.AddModulesAsync(asm, null);
+            }
 
-            var cmds = await InstallPluginCommandsAsync(ctx);
+            //install commands defined in loaded plugin assemblies
+            foreach (var ctx in bot.Plugins)
+                await InstallPluginCommandsAsync(ctx);
 
-            if (cmds.InteractionModules.Count > 0)
-                foreach (var guild in bot.Client.Guilds)
-                    await InteractionService.AddModulesToGuildAsync(guild.Id, false, [.. cmds.InteractionModules]);
+            //connect client to command handler
+            bot.Client.MessageReceived += HandleCommandAsync;
+            bot.Client.MessageCommandExecuted += HandleInteractionAsync;
+            bot.Client.SlashCommandExecuted += HandleInteractionAsync;
+            bot.Client.UserCommandExecuted += HandleInteractionAsync;
         }
 
-        private async void OnPluginKilled(PluginContext<DiscordBotPlugin> ctx) {
+        public void UninstallHandler() {
+            //disconnect client from command handler
+            bot.Client.MessageReceived -= HandleCommandAsync;
+            bot.Client.MessageCommandExecuted -= HandleInteractionAsync;
+            bot.Client.SlashCommandExecuted -= HandleInteractionAsync;
+            bot.Client.UserCommandExecuted -= HandleInteractionAsync;
+        }
+
+        private async void OnPluginLoaded(PluginContext<AthenaBotPlugin> ctx) {
+            var cmds = await InstallPluginCommandsAsync(ctx);
+
+            if (cmds.InteractionModules.Count > 0) {
+                foreach (var guild in bot.Client.Guilds)
+                    await InteractionService.AddModulesToGuildAsync(guild.Id, false, [.. cmds.InteractionModules]);
+            }
+        }
+
+        private async void OnPluginKilled(PluginContext<AthenaBotPlugin> ctx) {
             var idx = pluginCommands.FindIndex(s => s.Context == ctx);
             if (idx > -1) {
                 var cmds = pluginCommands[idx];
@@ -74,29 +101,12 @@ namespace AthenaBot
                         await InteractionService.RemoveModuleAsync(cmd);
 
                     foreach (var guild in bot.Client.Guilds)
-                        await InteractionService.RegisterCommandsToGuildAsync(guild.Id);
+                        await InstallInteractionsAsync(guild.Id);
                 }
             }
         }
 
-        public async Task InstallCommandsAsync() {
-            //connect client to command handler
-            bot.Client.MessageReceived += HandleCommandAsync;
-            bot.Client.MessageCommandExecuted += HandleInteractionAsync;
-            bot.Client.SlashCommandExecuted += HandleInteractionAsync;
-            bot.Client.UserCommandExecuted += HandleInteractionAsync;
-
-            //load AthenaBot's built-in commands
-            //var asm = Assembly.GetExecutingAssembly();
-            //await CommandService.AddModulesAsync(asm, null);
-            //await InteractionService.AddModulesAsync(asm, null);
-
-            //install commands defined in loaded plugin assemblies
-            foreach (var ctx in bot.Plugins)
-                await InstallPluginCommandsAsync(ctx);
-        }
-
-        private async Task<PluginCommands> InstallPluginCommandsAsync(PluginContext<DiscordBotPlugin> context) {
+        private async Task<PluginCommands> InstallPluginCommandsAsync(PluginContext<AthenaBotPlugin> context) {
             var cmds = new PluginCommands(context);
 
             foreach (Assembly asm in context.Assemblies)
@@ -118,7 +128,7 @@ namespace AthenaBot
 
         public async Task InstallInteractionsAsync() {
             foreach (var guild in bot.Client.Guilds)
-                await InteractionService.RegisterCommandsToGuildAsync(guild.Id);
+                await InstallInteractionsAsync(guild.Id);
         }
 
         public async Task InstallInteractionsAsync(ulong guildId) {
@@ -136,10 +146,10 @@ namespace AthenaBot
             if (smsg is not SocketUserMessage message || message.Author.IsBot)
                 return;
 
-            if (!message.Content.StartsWithAny('!', '.', '$', '#') &&
-                !message.HasMentionPrefix(bot.Client.CurrentUser, ref argPos)) return;
-
-            await CommandService.ExecuteAsync(new AthenaCommandContext(bot, message), argPos, null);
+            if (message.HasMentionPrefix(bot.Client.CurrentUser, ref argPos) ||
+                message.Content.StartsWithAny('!', '.', '$', '#')) {
+                await CommandService.ExecuteAsync(new AthenaCommandContext(bot, message), argPos, null);
+            }
         }
     }
 }

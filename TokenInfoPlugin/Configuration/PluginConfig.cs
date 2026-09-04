@@ -2,19 +2,14 @@
 
 namespace TokenInfoPlugin.Configuration
 {
-    public class PluginConfig : ModelBase
+    public class PluginConfig
     {
         public string BscScanApiKey { get; set; }
 
         public DateTime LastTrending { get; set; }
 
-        public List<string> RecentTrending { get; set; }
+        public ModelList<string> RecentTrending { get; set; } = [];
 
-        public List<ServerConfig> Servers { get; set; }
-
-        public PluginConfig() {
-            RecentTrending = [];
-            Servers = [];
-        }
+        public ModelList<ServerConfig> Servers { get; set; } = [];
     }
 }

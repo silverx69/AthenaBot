@@ -23,7 +23,6 @@ namespace AthenaBot
 #if DEBUG
             Logging.LogLevel = LogLevel.Debug;
 #endif
-
             Logging.LogDirectory = directories.Logs;
             Logging.LogMessage += ShowLog;
 

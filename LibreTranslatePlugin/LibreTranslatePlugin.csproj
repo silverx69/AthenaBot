@@ -7,7 +7,7 @@
     <Title>LibreTranslatePlugin</Title>
     <Authors>silverx69</Authors>
     <Company>Cloud3d Games</Company>
-    <Copyright>silverx69 © 2023</Copyright>
+    <Copyright>silverx69 © 2026</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/silverx69/AthenaBot.git</RepositoryUrl>
@@ -16,14 +16,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AthenaBot.Core\AthenaBot.Core.csproj" />
   </ItemGroup>
   <!-- 
-  When debugging .exe it will load plugins from data folder
-  These build events will copy Plugin/Dependencies to data folder automatically.
-  Commands assume plugins are to be placed in "AppData\Roaming\AthenaBot" on Windows, modify as necessary for other targets.
+  When debugging .exe it will load plugins from data folder.
+  These build events will copy plugin assemblies to the data folder automatically.
+  Event commands assume plugins are to be placed in "AppData\Roaming\AthenaBot\Plugins", modify as necessary for other targets.
   -->
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="mkdir &quot;%25APPDATA%25\AthenaBot\Plugins\$(TargetName)\&quot;&#xD;&#xA;copy &quot;$(TargetDir)*&quot; &quot;%25APPDATA%25\AthenaBot\Plugins\$(TargetName)\*&quot;" />
+    <Exec Command="mkdir &quot;%25APPDATA%25\AthenaBot\Plugins\$(TargetName)\&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName)*&quot; &quot;%25APPDATA%25\AthenaBot\Plugins\$(TargetName)\*&quot;" />
   </Target>
 </Project>

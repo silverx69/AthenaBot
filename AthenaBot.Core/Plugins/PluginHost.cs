@@ -1,4 +1,10 @@
-﻿namespace AthenaBot.Plugins
+﻿using AthenaBot.Configuration;
+using AthenaBot.Plugins.Dependencies;
+using System.Reflection;
+using System.Runtime.Loader;
+using System.Text.Json;
+
+namespace AthenaBot.Plugins
 {
     public abstract class PluginHost<TPlugin> :
         ModelReadOnlyList<PluginContext<TPlugin>>,
@@ -7,9 +13,18 @@
     {
         volatile bool unloading = false;
 
+        static readonly bool HaveNuget;
+        static readonly string NugetPath;
+
         public string BaseDirectory {
             get;
             private set;
+        }
+
+        static PluginHost() {
+            NugetPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
+            HaveNuget = Directory.Exists(NugetPath);
         }
 
         public PluginHost(string baseDirectory) {
@@ -22,15 +37,11 @@
         }
 
         public bool IsPluginLoaded(string name) {
-            string lowname = name.ToLower();
-
-            if (lowname.EndsWith(".dll")) {
+            if (name.EndsWith(".dll"))
                 name = name[0..^4];
-                lowname = lowname[0..^4];
-            }
 
             lock (SyncRoot) {
-                int index = this.FindIndex(s => s.Name.ToLower() == lowname);
+                int index = this.FindIndex(s => s.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
                 if (index > -1) return true;
             }
 
@@ -38,10 +49,13 @@
         }
 
         public bool LoadPlugin(string name) {
+            if (name.EndsWith(".dll"))
+                name = name[0..^4];
+
             if (IsPluginLoaded(name))
                 return true;
             try {
-                LoadPluginInternal(name);
+                return LoadPluginInternal(name);
             }
             catch (Exception ex) {
                 Logging.Error(string.Format("{0}.{1}", GetType().Name, nameof(LoadPlugin)), ex);
@@ -50,6 +64,9 @@
         }
 
         public async Task<bool> LoadPluginAsync(string name) {
+            if (name.EndsWith(".dll"))
+                name = name[0..^4];
+
             if (IsPluginLoaded(name))
                 return true;
             try {
@@ -63,9 +80,21 @@
 
         private bool LoadPluginInternal(string name) {
             var context = GetPluginContext<TPlugin>(name);
-            if (context == null) return false;
+
+            var cmdFile = new FileInfo(Path.Combine(context.PluginPath, "commands.json"));
+            if (cmdFile.Exists) {
+                using var stream = cmdFile.OpenRead();
+                context.Commands = JsonSerializer.Deserialize<ModelList<CommandConfig>>(stream, Json.Options);
+            }
+
+            var depsFile = new FileInfo(Path.Combine(context.PluginPath, name + ".deps.json"));
+            if (depsFile.Exists) {
+                using var stream = depsFile.OpenRead();
+                context.Dependencies = JsonSerializer.Deserialize<PluginDependencies>(stream, Json.Options);
+            }
 
             context.Assembly = context.LoadFromAssemblyPath(context.FilePath);
+            context.Resolving += ResolvePluginDependency;
 
             Type impl = null;
             Type pluginType = typeof(TPlugin);
@@ -87,11 +116,40 @@
             return true;
         }
 
+        private Assembly ResolvePluginDependency(AssemblyLoadContext ctx, AssemblyName aname) {
+            var context = (PluginContext<TPlugin>)ctx;
+            string path = Path.Combine(context.PluginPath, aname.Name + ".dll");
+
+            // check if the assembly exists in the plugin directory
+            if (File.Exists(path))
+                return context.LoadFromAssemblyPath(path);
+
+            // check if the assembly exists in the local user's nuget cache
+            else if (HaveNuget && context.Dependencies is not null) {
+                foreach (var platform in context.Dependencies.Targets) {
+                    foreach (var target in platform.Value) {
+                        if (context.Dependencies.Libraries.TryGetValue(target.Key, out Library library) && library.Type == "package") {
+                            foreach (var rt in target.Value.Runtime) {
+                                var pinfo = new FileInfo(Path.Combine(NugetPath, library.Path, rt.Key));
+                                if (pinfo.Exists &&
+                                    pinfo.Name == aname.Name + pinfo.Extension &&
+                                    rt.Value["fileVersion"] == aname.Version.ToString()) {
+                                    return context.LoadFromAssemblyPath(pinfo.FullName);
+                                }
+                            }
+                        }
+                    }
+                }
+                // download from nuget?
+            }
+            return null;
+        }
+
         public void KillPlugin(string name) {
             lock (SyncRoot) {
                 string lowname = name.ToLower();
 
-                int index = this.FindIndex(s => s.Name.ToLower() == lowname);
+                int index = this.FindIndex(s => s.Name.Equals(lowname, StringComparison.InvariantCultureIgnoreCase));
                 if (index == -1) return;
 
                 KillPlugin(this[index]);
@@ -105,6 +163,7 @@
         protected void KillPlugin(PluginContext<TPlugin> context) {
             InnerList.Remove(context);
             OnPluginKilled(context);
+            context.Resolving -= ResolvePluginDependency;
             context.Unload();
         }
 
@@ -131,8 +190,8 @@
             if (!unloading) Killed?.Invoke(context);
         }
 
-        protected virtual PluginContext<T> GetPluginContext<T>(string dllname) where T : IPlugin {
-            return new PluginContext<T>(dllname, Path.Combine(BaseDirectory, dllname, dllname + ".dll"));
+        protected virtual PluginContext<T> GetPluginContext<T>(string name) where T : IPlugin {
+            return new PluginContext<T>(name, Path.Combine(BaseDirectory, name, name + ".dll"));
         }
 
         public event PluginEventHandler<TPlugin> Loaded;

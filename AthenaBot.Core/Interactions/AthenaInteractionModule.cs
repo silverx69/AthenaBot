@@ -2,7 +2,7 @@
 
 namespace AthenaBot.Interactions
 {
-    [RequireConfig]
+    [AthenaPrecondition]
     public abstract class AthenaInteractionModule : InteractionModuleBase<AthenaInteractionContext>
     {
     }

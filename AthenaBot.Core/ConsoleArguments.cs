@@ -16,7 +16,7 @@ namespace AthenaBot
         }
 
         public ConsoleArgumentAttribute() {
-            Aliases = new List<string>();
+            Aliases = [];
         }
 
         public ConsoleArgumentAttribute(PropertyInfo property)
@@ -32,7 +32,7 @@ namespace AthenaBot
 
         public ConsoleArgumentAttribute(string name, params string[] aliases) {
             Name = name;
-            Aliases = aliases.ToList();
+            Aliases = [.. aliases];
         }
     }
 

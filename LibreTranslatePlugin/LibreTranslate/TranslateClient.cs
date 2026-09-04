@@ -18,9 +18,7 @@ namespace LibreTranslatePlugin.LibreTranslate
 
         public TranslateClient(string apiUrl, string apiKey)
             : this(apiUrl) {
-            APIUrl = apiUrl;
             APIKey = apiKey;
-            CreateClient();
         }
 
         private void CreateClient() {
@@ -40,9 +38,9 @@ namespace LibreTranslatePlugin.LibreTranslate
             return await response.Content.ReadFromJsonAsync<DetectedLanguage>();
         }
 
-        public async Task<TranslateResponse> TranslateAsync(string text, string target, string source = "auto", int alternatives = 0) {
+        public async Task<TranslateResult> TranslateAsync(string text, string target, string source = "auto", int alternatives = 0) {
 
-            var response = await client.PostAsJsonAsync("/translate", new TranslateRequest() {
+            var clientResponse = await client.PostAsJsonAsync("/translate", new TranslateRequest() {
                 Text = text,
                 Target = target,
                 Source = source,
@@ -50,8 +48,15 @@ namespace LibreTranslatePlugin.LibreTranslate
                 APIKey = APIKey
             });
 
-            return await response.Content.ReadFromJsonAsync<TranslateResponse>();
+            var clientResult = await clientResponse.Content.ReadFromJsonAsync<TranslateResponse>();
 
+            return new() {
+                SourceText = text,
+                SourceLanguage = source == "auto" ? clientResult.DetectedLanguage.Language : source,
+                TranslatedText = clientResult.TranslatedText,
+                TranslatedLanguage = target,
+                Alternatives = clientResult.Alternatives
+            };
         }
 
         public void Dispose() {
