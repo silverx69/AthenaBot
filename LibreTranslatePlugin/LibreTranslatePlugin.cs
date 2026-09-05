@@ -107,10 +107,10 @@ namespace LibreTranslatePlugin
                 language = language.Split('-')[0];
 
                 var lang = Languages.Find(s =>
-                    s.Name.Equals(language, StringComparison.OrdinalIgnoreCase) ||
-                    s.EnglishName.Equals(language, StringComparison.OrdinalIgnoreCase) ||
-                    s.NativeName.Equals(language, StringComparison.OrdinalIgnoreCase) ||
-                    s.ThreeLetterISOLanguageName.Equals(language, StringComparison.OrdinalIgnoreCase));
+                    s.Name.Equals(language, StringComparison.InvariantCultureIgnoreCase) ||
+                    s.EnglishName.Equals(language, StringComparison.InvariantCultureIgnoreCase) ||
+                    s.NativeName.Equals(language, StringComparison.InvariantCultureIgnoreCase) ||
+                    s.ThreeLetterISOLanguageName.Equals(language, StringComparison.InvariantCultureIgnoreCase));
 
                 if (lang != null) return lang.Name;
             }
@@ -122,7 +122,7 @@ namespace LibreTranslatePlugin
                 throw new ArgumentNullException(nameof(code));
 
             if (Languages != null) {
-                var ci = Languages.Find(s => s.Name.Equals(code, StringComparison.OrdinalIgnoreCase));
+                var ci = Languages.Find(s => s.Name.Equals(code, StringComparison.InvariantCultureIgnoreCase));
                 if (ci != null) return ci.EnglishName;
             }
             return "English";
